@@ -1,0 +1,2576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一生足迹工作台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        :root {
+            --bg: #ece7dd;
+            --paper: rgba(255, 252, 247, 0.92);
+            --paper-strong: #fffdfa;
+            --line: rgba(24, 49, 63, 0.12);
+            --ink: #18313f;
+            --muted: #617281;
+            --accent: #0d7c8f;
+            --accent-strong: #ef7d24;
+            --accent-soft: rgba(13, 124, 143, 0.12);
+            --glow: rgba(239, 125, 36, 0.18);
+            --shadow: 0 18px 48px rgba(24, 49, 63, 0.14);
+            --radius-xl: 26px;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --radius-sm: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background:
+                radial-gradient(circle at top left, rgba(239, 125, 36, 0.18), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(13, 124, 143, 0.2), transparent 28%),
+                linear-gradient(180deg, #efe9df 0%, #e8e3d8 100%);
+            color: var(--ink);
+            font-family: "Noto Sans SC", sans-serif;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+        }
+
+        .app-shell {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            padding: 18px;
+            gap: 18px;
+        }
+
+        .sidebar {
+            width: min(430px, 38vw);
+            min-width: 360px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: var(--radius-xl);
+            background: linear-gradient(180deg, rgba(255, 251, 245, 0.92), rgba(247, 243, 236, 0.82));
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+            overflow: hidden;
+        }
+
+        .brand {
+            display: grid;
+            gap: 10px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.68);
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-size: clamp(28px, 3vw, 38px);
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+        }
+
+        .brand p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .tabs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 6px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(24, 49, 63, 0.08);
+        }
+
+        .tab-button {
+            border: none;
+            border-radius: 14px;
+            padding: 12px 14px;
+            background: transparent;
+            color: var(--muted);
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .tab-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, rgba(13, 124, 143, 0.16), rgba(239, 125, 36, 0.16));
+            color: var(--ink);
+            box-shadow: inset 0 0 0 1px rgba(13, 124, 143, 0.18);
+        }
+
+        .panel-stack {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .panel-stack::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .panel-stack::-webkit-scrollbar-thumb {
+            background: rgba(24, 49, 63, 0.18);
+            border-radius: 999px;
+        }
+
+        .panel {
+            display: none;
+            gap: 14px;
+        }
+
+        .panel.active {
+            display: grid;
+        }
+
+        .section {
+            display: grid;
+            gap: 12px;
+            padding: 16px;
+            border-radius: var(--radius-lg);
+            background: var(--paper);
+            border: 1px solid var(--line);
+            box-shadow: 0 12px 24px rgba(24, 49, 63, 0.06);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: start;
+        }
+
+        .section h2 {
+            margin: 0;
+            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-size: 18px;
+            letter-spacing: -0.03em;
+        }
+
+        .section p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .label {
+            display: grid;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--ink);
+        }
+
+        .text-input,
+        .select-input,
+        .range-input {
+            width: 100%;
+            border: 1px solid rgba(24, 49, 63, 0.12);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--ink);
+        }
+
+        .text-input,
+        .select-input {
+            padding: 12px 14px;
+        }
+
+        .range-input {
+            appearance: none;
+            height: 7px;
+            padding: 0;
+            background: linear-gradient(90deg, rgba(13, 124, 143, 0.28), rgba(239, 125, 36, 0.35));
+            outline: none;
+        }
+
+        .range-input::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            background: var(--accent);
+            box-shadow: 0 6px 14px rgba(13, 124, 143, 0.26);
+            cursor: pointer;
+        }
+
+        .file-picker {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 52px;
+            padding: 10px 12px;
+            border: 1px solid rgba(24, 49, 63, 0.12);
+            border-radius: 14px;
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(247, 243, 236, 0.88));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .file-picker:hover {
+            border-color: rgba(13, 124, 143, 0.22);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.82),
+                0 10px 24px rgba(24, 49, 63, 0.06);
+        }
+
+        .file-picker-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 0 14px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 238, 230, 0.94));
+            border: 1px solid rgba(24, 49, 63, 0.12);
+            color: var(--ink);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.82),
+                0 8px 18px rgba(24, 49, 63, 0.08);
+        }
+
+        .file-picker:hover .file-picker-button {
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.86),
+                0 10px 20px rgba(24, 49, 63, 0.12);
+        }
+
+        .file-picker-name {
+            min-width: 0;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-input-hidden {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .control-stack {
+            display: grid;
+            gap: 12px;
+        }
+
+        .mode-explain {
+            display: grid;
+            gap: 10px;
+            padding: 14px;
+            border-radius: 14px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(248, 244, 238, 0.9));
+            border: 1px solid rgba(24, 49, 63, 0.08);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+        }
+
+        .mode-explain-title {
+            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-size: 15px;
+            letter-spacing: -0.02em;
+        }
+
+        .mode-explain-copy {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .mode-explain-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .mode-explain-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--ink);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .mode-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            flex: 0 0 auto;
+            border: 1px solid rgba(24, 49, 63, 0.12);
+        }
+
+        .checkbox-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 11px 14px;
+            border: 1px solid rgba(24, 49, 63, 0.12);
+            border-radius: 12px;
+            background: rgba(24, 49, 63, 0.08);
+            color: var(--ink);
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.72),
+                0 8px 18px rgba(24, 49, 63, 0.08);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.18s ease, border-color 0.18s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-1px);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.78),
+                0 12px 24px rgba(24, 49, 63, 0.12);
+        }
+
+        .button:disabled {
+            cursor: not-allowed;
+            opacity: 0.45;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, var(--accent), #1f9ea7);
+            color: #fff;
+            border-color: rgba(13, 124, 143, 0.34);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.18),
+                0 10px 22px rgba(13, 124, 143, 0.2);
+        }
+
+        .button-secondary {
+            background: linear-gradient(135deg, rgba(239, 125, 36, 0.18), rgba(239, 125, 36, 0.28));
+            border-color: rgba(239, 125, 36, 0.18);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.76),
+                0 10px 20px rgba(239, 125, 36, 0.1);
+        }
+
+        .button-ghost {
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(24, 49, 63, 0.1);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.84),
+                0 8px 18px rgba(24, 49, 63, 0.06);
+        }
+
+        .segmented {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .segment-button {
+            padding: 10px 12px;
+            border: 1px solid rgba(24, 49, 63, 0.1);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.7);
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.82),
+                0 6px 16px rgba(24, 49, 63, 0.05);
+        }
+
+        .segment-button.active {
+            color: var(--ink);
+            background: rgba(13, 124, 143, 0.14);
+            border-color: rgba(13, 124, 143, 0.2);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.84),
+                0 10px 20px rgba(13, 124, 143, 0.12);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(24, 49, 63, 0.08);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+            transition: width 0.14s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .stat-card {
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(24, 49, 63, 0.08);
+            min-height: 86px;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .stat-value {
+            margin-top: 6px;
+            font-size: 24px;
+            line-height: 1.15;
+            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            letter-spacing: -0.04em;
+        }
+
+        .stat-meta {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .info-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(24, 49, 63, 0.08);
+            font-size: 13px;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .info-key {
+            color: var(--muted);
+        }
+
+        .info-value {
+            color: var(--ink);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .status {
+            min-height: 20px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .status.error {
+            color: #a9412b;
+        }
+
+        .status.success {
+            color: #0a7d45;
+        }
+
+        .map-stage {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .map-chip {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            min-height: 38px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(24, 49, 63, 0.08);
+            color: var(--ink);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            box-shadow: 0 10px 24px rgba(24, 49, 63, 0.1);
+            backdrop-filter: blur(12px);
+        }
+
+        .map-note {
+            max-width: 320px;
+            padding: 10px 14px;
+            border-radius: 16px;
+            background: rgba(24, 49, 63, 0.72);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 12px;
+            line-height: 1.5;
+            box-shadow: 0 10px 24px rgba(24, 49, 63, 0.16);
+            backdrop-filter: blur(16px);
+        }
+
+        .memory-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .memory-card {
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(24, 49, 63, 0.1);
+            background:
+                radial-gradient(circle at top right, var(--glow), transparent 40%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(249, 246, 240, 0.86));
+        }
+
+        .memory-title {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .memory-value {
+            margin-top: 10px;
+            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-size: 26px;
+            line-height: 1.1;
+            letter-spacing: -0.04em;
+        }
+
+        .memory-detail {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 980px) {
+            body {
+                overflow: auto;
+            }
+
+            .app-shell {
+                height: auto;
+                min-height: 100vh;
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .map-stage {
+                min-height: 55vh;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .app-shell {
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .sidebar {
+                padding: 14px;
+            }
+
+            .section {
+                padding: 14px;
+            }
+
+            .two-col,
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="eyebrow">StepLife Studio</span>
+                <h1>一生足迹工作台</h1>
+                <p>同一张地图做两件事：单段补轨用于转换、预览和导出；全量足迹用于热力、常去地点、年度扩张和记忆卡片。</p>
+            </div>
+
+            <div class="tabs">
+                <button type="button" class="tab-button active" data-tab-target="single">单段补轨</button>
+                <button type="button" class="tab-button" data-tab-target="full">全量足迹</button>
+            </div>
+
+            <div class="panel-stack">
+                <section id="singlePanel" class="panel active">
+                    <div class="section">
+                        <div class="section-header">
+                            <div>
+                                <h2>单段输入</h2>
+                                <p>支持航班 CSV、火车 KML、OVKML，以及已经转好的标准 CSV。选择文件后会自动处理，KML / OVKML 需要先补北京时间起止时间。</p>
+                            </div>
+                        </div>
+
+                        <label class="label">
+                            输入类型
+                            <select id="singleFormat" class="select-input">
+                                <option value="auto">自动识别</option>
+                                <option value="standard">标准 CSV</option>
+                                <option value="flight">航班 CSV</option>
+                                <option value="kml">火车 KML</option>
+                                <option value="ovkml">奥维 OVKML</option>
+                            </select>
+                        </label>
+
+                        <label class="label">
+                            上传文件
+                            <div class="file-picker">
+                                <span class="file-picker-button">选择并载入轨迹文件</span>
+                                <span id="singleUploadName" class="file-picker-name">未选择文件</span>
+                                <input id="singleUpload" class="file-input-hidden" type="file" accept=".csv,.kml,.ovkml,.xml">
+                            </div>
+                        </label>
+
+                        <div id="singleTimeBlock" class="two-col hidden">
+                            <label class="label">
+                                起始时间（北京时间）
+                                <input id="singleStartTime" class="text-input" type="text" placeholder="2024-01-03 08:30">
+                            </label>
+                            <label class="label">
+                                结束时间（北京时间）
+                                <input id="singleEndTime" class="text-input" type="text" placeholder="2024-01-03 09:30">
+                            </label>
+                        </div>
+
+                        <div class="button-row">
+                            <button id="singleExportBtn" class="button button-secondary" type="button" disabled>导出标准 CSV</button>
+                        </div>
+
+                        <div id="singleStatus" class="status">文件会在浏览器本地完成解析与转换，不经过服务端。</div>
+                    </div>
+
+                    <div id="singleStatsSection" class="section hidden">
+                        <div class="section-header">
+                            <div>
+                                <h2>单段摘要</h2>
+                                <p id="singleStatsHint">用于确认这段补轨是否合理。</p>
+                            </div>
+                        </div>
+                        <div id="singleStatsGrid" class="stats-grid"></div>
+                    </div>
+
+                    <div id="singleControlsSection" class="section hidden">
+                        <div class="section-header">
+                            <div>
+                                <h2>回放控制</h2>
+                                <p>拖动进度条查看任一点位，或直接播放整段轨迹。</p>
+                            </div>
+                        </div>
+
+                        <div class="button-row">
+                            <button id="singlePlayBtn" class="button button-primary" type="button">播放</button>
+                            <button id="singlePauseBtn" class="button button-ghost" type="button" disabled>暂停</button>
+                            <button id="singleResetBtn" class="button button-ghost" type="button" disabled>重置</button>
+                        </div>
+
+                        <label class="label">
+                            回放速度 <span id="singleSpeedValue">12x</span>
+                            <input id="singleSpeedSlider" class="range-input" type="range" min="1" max="60" value="12">
+                        </label>
+
+                        <label class="label">
+                            进度
+                            <input id="singleProgressSlider" class="range-input" type="range" min="0" max="0" value="0">
+                        </label>
+
+                        <div class="progress-bar">
+                            <div id="singleProgressFill" class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <div id="singleCurrentSection" class="section hidden">
+                        <div class="section-header">
+                            <div>
+                                <h2>当前位置</h2>
+                                <p>当前帧的时间、速度、海拔和照片标记。</p>
+                            </div>
+                        </div>
+                        <div class="info-list">
+                            <div class="info-row"><span class="info-key">时间</span><span id="singleCurrentTime" class="info-value">-</span></div>
+                            <div class="info-row"><span class="info-key">经纬度</span><span id="singleCurrentCoord" class="info-value">-</span></div>
+                            <div class="info-row"><span class="info-key">速度</span><span id="singleCurrentSpeed" class="info-value">-</span></div>
+                            <div class="info-row"><span class="info-key">累计距离</span><span id="singleCurrentDistance" class="info-value">-</span></div>
+                            <div class="info-row"><span class="info-key">海拔</span><span id="singleCurrentAltitude" class="info-value">-</span></div>
+                            <div class="info-row"><span class="info-key">照片标记</span><span id="singleCurrentPhoto" class="info-value">-</span></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="fullPanel" class="panel">
+                    <div class="section">
+                        <div class="section-header">
+                            <div>
+                                <h2>全量输入</h2>
+                                <p>上传原始备份或标准 CSV。选择文件后会自动载入，然后可以直接切换热力、常去地点和年度扩张。</p>
+                            </div>
+                        </div>
+
+                        <label class="label">
+                            上传全量文件
+                            <div class="file-picker">
+                                <span class="file-picker-button">选择并载入全量 CSV</span>
+                                <span id="fullUploadName" class="file-picker-name">未选择文件</span>
+                                <input id="fullUpload" class="file-input-hidden" type="file" accept=".csv">
+                            </div>
+                        </label>
+
+                        <div id="fullStatus" class="status">选择文件后会立即开始解析。全量模式更适合看地点、年份和记忆，不强调交通方式识别。</div>
+                    </div>
+
+                    <div id="fullControlsSection" class="section hidden">
+                        <div class="section-header">
+                            <div>
+                                <h2>玩法切换</h2>
+                                <p>热力图看密度，常去地点看反复回去哪里，年度扩张看地点在哪一年第一次出现。</p>
+                            </div>
+                        </div>
+
+                        <div id="fullModeSwitch" class="segmented">
+                            <button type="button" class="segment-button active" data-full-mode="heat">人生热力图</button>
+                            <button type="button" class="segment-button" data-full-mode="revisit">常去地点</button>
+                            <button type="button" class="segment-button" data-full-mode="annual">年度扩张</button>
+                        </div>
+
+                        <div id="fullModeExplain" class="mode-explain">
+                            <div id="fullModeExplainTitle" class="mode-explain-title">热力图看哪里最常出现</div>
+                            <div id="fullModeExplainCopy" class="mode-explain-copy">把所有点当成密度。颜色越热，说明你在那一带出现得越频繁。</div>
+                            <div id="fullModeExplainList" class="mode-explain-list"></div>
+                        </div>
+
+                        <div id="fullYearFilterBlock" class="control-stack">
+                            <label class="label">
+                                年份筛选
+                                <select id="fullYearSelect" class="select-input">
+                                    <option value="all">全部年份</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div id="annualControlBlock" class="control-stack hidden">
+                            <label class="label">
+                                <span>年度进度 <span id="annualYearLabel">-</span></span>
+                                <input id="annualYearSlider" class="range-input" type="range" min="0" max="0" value="0">
+                            </label>
+
+                            <div class="button-row">
+                                <button id="annualPlayBtn" class="button button-secondary" type="button" disabled>从头播放年度扩张</button>
+                                <button id="annualPauseBtn" class="button button-ghost" type="button" disabled>暂停</button>
+                            </div>
+                        </div>
+
+                        <label class="label">
+                            <span class="checkbox-label"><input id="photoToggle" type="checkbox"> 显示照片标记点</span>
+                        </label>
+                    </div>
+
+                    <div id="fullSummarySection" class="section hidden">
+                        <div class="section-header">
+                            <div>
+                                <h2>全量摘要</h2>
+                                <p id="fullSummaryHint">优先展示时间跨度、活跃天数和常去地点，而不是用整屏线条压满地图。</p>
+                            </div>
+                        </div>
+                        <div id="fullSummaryGrid" class="stats-grid"></div>
+                    </div>
+
+                    <div id="memorySection" class="section hidden">
+                        <div class="section-header">
+                            <div>
+                                <h2>记忆卡片墙</h2>
+                                <p>从现有字段里提炼几个最稳定的记忆点，不依赖城市库，也不做交通方式推断。</p>
+                            </div>
+                        </div>
+                        <div id="memoryGrid" class="memory-grid"></div>
+                    </div>
+                </section>
+            </div>
+        </aside>
+
+        <main class="map-stage">
+            <div id="map"></div>
+            <div class="map-overlay">
+                <div id="mapModeChip" class="map-chip">单段补轨 / 路径预览</div>
+                <div id="mapNote" class="map-note">右侧面板会持续解释当前玩法，地图这里只保留简短提示。</div>
+            </div>
+        </main>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script>
+        const OUTPUT_HEADERS = [
+            "dataTime",
+            "locType",
+            "longitude",
+            "latitude",
+            "heading",
+            "accuracy",
+            "speed",
+            "distance",
+            "isBackForeground",
+            "stepType",
+            "altitude",
+        ];
+
+        const BEIJING_OFFSET_SECONDS = 8 * 3600;
+        const PHOTO_HEURISTIC_THRESHOLD = 0.2;
+
+        const state = {
+            activeTab: "single",
+            single: {
+                fileName: "",
+                points: [],
+                photoFlagValue: null,
+                playbackIndex: 0,
+                playbackTimer: null,
+                speed: 12,
+                sourceFormat: "auto",
+            },
+            full: {
+                fileName: "",
+                points: [],
+                photoFlagValue: null,
+                years: [],
+                selectedYear: "all",
+                mode: "heat",
+                annualYearIndex: 0,
+                annualTimer: null,
+                showPhotos: false,
+                placeClusters: [],
+                allVisitClusters: [],
+                memoryCards: [],
+                stayLocations: [],
+                heatPoints: [],
+            },
+            map: {
+                leaflet: null,
+                baseLineLayer: null,
+                playedLineLayer: null,
+                currentMarker: null,
+                startMarker: null,
+                endMarker: null,
+                photoLayer: L.layerGroup(),
+                heatLayer: null,
+                revisitLayer: L.layerGroup(),
+                annualLayer: L.layerGroup(),
+            },
+        };
+
+        const ui = {};
+
+        document.addEventListener("DOMContentLoaded", () => {
+            collectElements();
+            initMap();
+            bindEvents();
+            updateUploadName(ui.single.upload, ui.single.uploadName, "未选择文件");
+            updateUploadName(ui.full.upload, ui.full.uploadName, "未选择文件");
+            toggleTimeInputs();
+            updateAnnualControls();
+        });
+
+        function collectElements() {
+            ui.tabButtons = Array.from(document.querySelectorAll(".tab-button"));
+            ui.panels = {
+                single: document.getElementById("singlePanel"),
+                full: document.getElementById("fullPanel"),
+            };
+            ui.mapModeChip = document.getElementById("mapModeChip");
+            ui.mapNote = document.getElementById("mapNote");
+
+            ui.single = {
+                format: document.getElementById("singleFormat"),
+                upload: document.getElementById("singleUpload"),
+                uploadName: document.getElementById("singleUploadName"),
+                startTime: document.getElementById("singleStartTime"),
+                endTime: document.getElementById("singleEndTime"),
+                timeBlock: document.getElementById("singleTimeBlock"),
+                exportBtn: document.getElementById("singleExportBtn"),
+                status: document.getElementById("singleStatus"),
+                statsSection: document.getElementById("singleStatsSection"),
+                statsGrid: document.getElementById("singleStatsGrid"),
+                statsHint: document.getElementById("singleStatsHint"),
+                controlsSection: document.getElementById("singleControlsSection"),
+                playBtn: document.getElementById("singlePlayBtn"),
+                pauseBtn: document.getElementById("singlePauseBtn"),
+                resetBtn: document.getElementById("singleResetBtn"),
+                speedSlider: document.getElementById("singleSpeedSlider"),
+                speedValue: document.getElementById("singleSpeedValue"),
+                progressSlider: document.getElementById("singleProgressSlider"),
+                progressFill: document.getElementById("singleProgressFill"),
+                currentSection: document.getElementById("singleCurrentSection"),
+                currentTime: document.getElementById("singleCurrentTime"),
+                currentCoord: document.getElementById("singleCurrentCoord"),
+                currentSpeed: document.getElementById("singleCurrentSpeed"),
+                currentDistance: document.getElementById("singleCurrentDistance"),
+                currentAltitude: document.getElementById("singleCurrentAltitude"),
+                currentPhoto: document.getElementById("singleCurrentPhoto"),
+            };
+
+            ui.full = {
+                upload: document.getElementById("fullUpload"),
+                uploadName: document.getElementById("fullUploadName"),
+                status: document.getElementById("fullStatus"),
+                controlsSection: document.getElementById("fullControlsSection"),
+                modeButtons: Array.from(document.querySelectorAll("[data-full-mode]")),
+                modeExplainTitle: document.getElementById("fullModeExplainTitle"),
+                modeExplainCopy: document.getElementById("fullModeExplainCopy"),
+                modeExplainList: document.getElementById("fullModeExplainList"),
+                yearFilterBlock: document.getElementById("fullYearFilterBlock"),
+                annualControlBlock: document.getElementById("annualControlBlock"),
+                yearSelect: document.getElementById("fullYearSelect"),
+                annualSlider: document.getElementById("annualYearSlider"),
+                annualYearLabel: document.getElementById("annualYearLabel"),
+                annualPlayBtn: document.getElementById("annualPlayBtn"),
+                annualPauseBtn: document.getElementById("annualPauseBtn"),
+                photoToggle: document.getElementById("photoToggle"),
+                summarySection: document.getElementById("fullSummarySection"),
+                summaryGrid: document.getElementById("fullSummaryGrid"),
+                summaryHint: document.getElementById("fullSummaryHint"),
+                memorySection: document.getElementById("memorySection"),
+                memoryGrid: document.getElementById("memoryGrid"),
+            };
+        }
+
+        function initMap() {
+            const map = L.map("map", {
+                zoomControl: true,
+                preferCanvas: true,
+            }).setView([35.8617, 104.1954], 5);
+
+            L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+                attribution: "&copy; OpenStreetMap &copy; CARTO",
+                maxZoom: 19,
+            }).addTo(map);
+
+            state.map.leaflet = map;
+        }
+
+        function bindEvents() {
+            ui.tabButtons.forEach((button) => {
+                button.addEventListener("click", () => setActiveTab(button.dataset.tabTarget));
+            });
+
+            ui.single.format.addEventListener("change", () => {
+                toggleTimeInputs();
+                maybeAutoLoadSingle();
+            });
+            ui.single.upload.addEventListener("change", () => {
+                updateUploadName(ui.single.upload, ui.single.uploadName, "未选择文件");
+                toggleTimeInputs();
+                maybeAutoLoadSingle();
+            });
+            ui.single.startTime.addEventListener("change", maybeAutoLoadSingle);
+            ui.single.endTime.addEventListener("change", maybeAutoLoadSingle);
+            ui.single.exportBtn.addEventListener("click", exportSingleCsv);
+            ui.single.playBtn.addEventListener("click", startSinglePlayback);
+            ui.single.pauseBtn.addEventListener("click", pauseSinglePlayback);
+            ui.single.resetBtn.addEventListener("click", resetSinglePlayback);
+            ui.single.speedSlider.addEventListener("input", () => {
+                state.single.speed = Number(ui.single.speedSlider.value);
+                ui.single.speedValue.textContent = `${state.single.speed}x`;
+                if (state.single.playbackTimer) {
+                    restartSinglePlayback();
+                }
+            });
+            ui.single.progressSlider.addEventListener("input", () => {
+                const index = Number(ui.single.progressSlider.value);
+                pauseSinglePlayback(false);
+                updateSingleFrame(index);
+            });
+
+            ui.full.upload.addEventListener("change", () => {
+                updateUploadName(ui.full.upload, ui.full.uploadName, "未选择文件");
+                if (ui.full.upload.files[0]) {
+                    handleFullLoad();
+                }
+            });
+            ui.full.modeButtons.forEach((button) => {
+                button.addEventListener("click", () => setFullMode(button.dataset.fullMode));
+            });
+            ui.full.yearSelect.addEventListener("change", () => {
+                state.full.selectedYear = ui.full.yearSelect.value;
+                renderFullModeExplain();
+                refreshFullMode();
+            });
+            ui.full.annualSlider.addEventListener("input", () => {
+                state.full.annualYearIndex = Number(ui.full.annualSlider.value);
+                renderAnnualView();
+            });
+            ui.full.annualPlayBtn.addEventListener("click", startAnnualPlayback);
+            ui.full.annualPauseBtn.addEventListener("click", stopAnnualPlayback);
+            ui.full.photoToggle.addEventListener("change", () => {
+                state.full.showPhotos = ui.full.photoToggle.checked;
+                refreshFullMode();
+            });
+        }
+
+        function setActiveTab(tab) {
+            state.activeTab = tab;
+            ui.tabButtons.forEach((button) => button.classList.toggle("active", button.dataset.tabTarget === tab));
+            Object.entries(ui.panels).forEach(([key, panel]) => panel.classList.toggle("active", key === tab));
+            if (tab === "single") {
+                ui.mapModeChip.textContent = state.single.points.length ? "单段补轨 / 路径预览" : "单段补轨 / 等待输入";
+                ui.mapNote.textContent = "单段模式：看路径、看回放、导出标准 CSV。";
+                if (state.single.points.length) {
+                    renderSingleMap();
+                    updateSingleFrame(state.single.playbackIndex);
+                } else {
+                    clearMapLayers();
+                }
+            } else {
+                ui.mapModeChip.textContent = "全量足迹 / 地点与年份";
+                ui.mapNote.textContent = "全量模式：看密度、常去地点和年份扩张。详细规则在右侧面板里持续显示。";
+                if (state.full.points.length) {
+                    refreshFullMode();
+                } else {
+                    clearMapLayers();
+                }
+            }
+        }
+
+        function toggleTimeInputs() {
+            const needsTime = singleNeedsTimeInput();
+            ui.single.timeBlock.classList.toggle("hidden", !needsTime);
+        }
+
+        function singleNeedsTimeInput() {
+            const format = ui.single.format.value;
+            const fileName = ui.single.upload.files[0]?.name?.toLowerCase() || "";
+            const autoNeedsTime = format === "auto" && (fileName.endsWith(".kml") || fileName.endsWith(".ovkml"));
+            return format === "kml" || format === "ovkml" || autoNeedsTime;
+        }
+
+        function maybeAutoLoadSingle() {
+            const file = ui.single.upload.files[0];
+            if (!file) {
+                return;
+            }
+
+            if (!singleNeedsTimeInput()) {
+                handleSingleLoad();
+                return;
+            }
+
+            const startText = ui.single.startTime.value.trim();
+            const endText = ui.single.endTime.value.trim();
+            if (!startText || !endText) {
+                setStatus(ui.single.status, "KML / OVKML 需要先填写北京时间起止时间，填完后会自动载入。", "");
+                return;
+            }
+
+            try {
+                parseBeijingTime(startText);
+                parseBeijingTime(endText);
+            } catch (_error) {
+                setStatus(ui.single.status, "时间格式应为 2024-01-03 08:30，填完整后会自动载入。", "");
+                return;
+            }
+
+            handleSingleLoad();
+        }
+
+        async function handleSingleLoad() {
+            const file = ui.single.upload.files[0];
+            if (!file) {
+                setStatus(ui.single.status, "请选择要处理的单段文件。", "error");
+                return;
+            }
+
+            pauseSinglePlayback(false);
+            setStatus(ui.single.status, "正在读取并转换单段文件...", "");
+
+            try {
+                const text = await readFileText(file);
+                const format = detectSingleFormat(text, file.name, ui.single.format.value);
+                const rows = parseSingleRows({
+                    text,
+                    format,
+                    startTime: ui.single.startTime.value,
+                    endTime: ui.single.endTime.value,
+                });
+                const normalized = normalizeTrackRows(rows);
+
+                if (!normalized.points.length) {
+                    throw new Error("未解析到有效轨迹点");
+                }
+
+                state.single.fileName = file.name;
+                state.single.points = normalized.points;
+                state.single.photoFlagValue = normalized.photoFlagValue;
+                state.single.playbackIndex = 0;
+                state.single.sourceFormat = format;
+
+                ui.single.exportBtn.disabled = false;
+                ui.single.controlsSection.classList.remove("hidden");
+                ui.single.currentSection.classList.remove("hidden");
+                ui.single.statsSection.classList.remove("hidden");
+                ui.single.playBtn.disabled = false;
+                ui.single.pauseBtn.disabled = true;
+                ui.single.resetBtn.disabled = false;
+                ui.single.progressSlider.max = String(Math.max(0, normalized.points.length - 1));
+                ui.single.progressSlider.value = "0";
+                ui.single.progressFill.style.width = "0%";
+
+                renderSingleSummary();
+                renderSingleMap();
+                updateSingleFrame(0);
+
+                setActiveTab("single");
+                setStatus(
+                    ui.single.status,
+                    `已载入 ${file.name}，识别为 ${formatLabel(format)}，共 ${normalized.points.length} 个点。`,
+                    "success"
+                );
+            } catch (error) {
+                setStatus(ui.single.status, error.message || String(error), "error");
+            }
+        }
+
+        async function handleFullLoad() {
+            const file = ui.full.upload.files[0];
+            if (!file) {
+                setStatus(ui.full.status, "请选择全量 CSV 文件。", "error");
+                return;
+            }
+
+            stopAnnualPlayback(false);
+            setStatus(ui.full.status, "正在读取全量足迹...", "");
+
+            try {
+                const text = await readFileText(file);
+                const normalized = normalizeTrackRows(parseCsvText(text));
+                if (!normalized.points.length) {
+                    throw new Error("未从全量文件中解析到有效轨迹点");
+                }
+
+                state.full.fileName = file.name;
+                state.full.points = normalized.points;
+                state.full.photoFlagValue = normalized.photoFlagValue;
+                state.full.mode = "heat";
+                state.full.selectedYear = "all";
+                state.full.showPhotos = false;
+                ui.full.photoToggle.checked = false;
+
+                prepareFullDataset();
+                populateYearOptions();
+                renderFullSummary();
+                renderMemoryCards();
+
+                ui.full.controlsSection.classList.remove("hidden");
+                ui.full.summarySection.classList.remove("hidden");
+                ui.full.memorySection.classList.remove("hidden");
+
+                setActiveTab("full");
+                setFullMode("heat");
+
+                setStatus(
+                    ui.full.status,
+                    `已载入 ${file.name}，共 ${normalized.points.length} 个点，跨度 ${state.full.years[0]}-${state.full.years[state.full.years.length - 1] || state.full.years[0]}.`,
+                    "success"
+                );
+            } catch (error) {
+                setStatus(ui.full.status, error.message || String(error), "error");
+            }
+        }
+
+        function parseSingleRows({ text, format, startTime, endTime }) {
+            if (format === "standard") {
+                return parseCsvText(text);
+            }
+
+            if (format === "flight") {
+                return parseFlightCsv(text);
+            }
+
+            if (format === "kml" || format === "ovkml") {
+                return parseCoordinateTrack(text, startTime, endTime);
+            }
+
+            throw new Error("不支持的单段输入格式");
+        }
+
+        function detectSingleFormat(text, fileName, chosenFormat) {
+            if (chosenFormat !== "auto") {
+                return chosenFormat;
+            }
+
+            const lowerName = String(fileName || "").toLowerCase();
+            if (/<coordinates>/i.test(text) || lowerName.endsWith(".kml") || lowerName.endsWith(".ovkml")) {
+                return lowerName.endsWith(".ovkml") ? "ovkml" : "kml";
+            }
+
+            const rows = parseCsvText(text);
+            if (!rows.length) {
+                throw new Error("未识别到可解析的文件内容");
+            }
+
+            const headerSet = new Set(Object.keys(rows[0]));
+            if (headerSet.has("dataTime") && headerSet.has("longitude") && headerSet.has("latitude")) {
+                return "standard";
+            }
+            if (headerSet.has("Time") && headerSet.has("Longitude") && headerSet.has("Latitude")) {
+                return "flight";
+            }
+
+            throw new Error("自动识别失败，请手动选择输入类型");
+        }
+
+        function parseFlightCsv(text) {
+            const rows = parseCsvText(text);
+            return rows.map((row) => ({
+                dataTime: safeNumber(row.Time, 0) + BEIJING_OFFSET_SECONDS,
+                locType: 1,
+                longitude: safeNumber(row.Longitude, NaN),
+                latitude: safeNumber(row.Latitude, NaN),
+                heading: safeNumber(row.Angle, 0),
+                accuracy: -20,
+                speed: safeNumber(row.Speed, 0),
+                distance: "",
+                isBackForeground: 1,
+                stepType: 0,
+                altitude: safeNumber(row.Height, 0),
+            }));
+        }
+
+        function parseCoordinateTrack(text, startTime, endTime) {
+            const startTs = parseBeijingTime(startTime);
+            const endTs = parseBeijingTime(endTime);
+            const coordinates = extractCoordinates(text);
+            const timestamps = interpolateTimestamps(startTs, endTs, coordinates.length);
+            return coordinates.map((point, index) => ({
+                dataTime: timestamps[index],
+                locType: 1,
+                longitude: point.lon,
+                latitude: point.lat,
+                heading: 0,
+                accuracy: -20,
+                speed: 0,
+                distance: "",
+                isBackForeground: 1,
+                stepType: 0,
+                altitude: point.alt,
+            }));
+        }
+
+        function parseCsvText(text) {
+            const sanitized = String(text || "").replace(/^\uFEFF/, "").replace(/\r/g, "");
+            const lines = sanitized.split("\n").filter((line) => line.trim().length > 0);
+            if (!lines.length) {
+                return [];
+            }
+
+            const headers = splitCsvLine(lines[0]).map((header) => header.trim());
+            const rows = [];
+            for (let index = 1; index < lines.length; index++) {
+                const values = splitCsvLine(lines[index]);
+                if (!values.length) {
+                    continue;
+                }
+                const row = {};
+                headers.forEach((header, headerIndex) => {
+                    row[header] = (values[headerIndex] ?? "").trim();
+                });
+                rows.push(row);
+            }
+            return rows;
+        }
+
+        function splitCsvLine(line) {
+            const result = [];
+            let current = "";
+            let inQuotes = false;
+
+            for (let index = 0; index < line.length; index++) {
+                const char = line[index];
+                if (char === "\"") {
+                    const next = line[index + 1];
+                    if (inQuotes && next === "\"") {
+                        current += "\"";
+                        index += 1;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                    continue;
+                }
+                if (char === "," && !inQuotes) {
+                    result.push(current);
+                    current = "";
+                    continue;
+                }
+                current += char;
+            }
+
+            result.push(current);
+            return result;
+        }
+
+        function extractCoordinates(text) {
+            const matches = [...String(text || "").matchAll(/<coordinates>([\s\S]*?)<\/coordinates>/gi)];
+            if (!matches.length) {
+                throw new Error("KML / OVKML 中未找到 coordinates 节点");
+            }
+
+            const points = [];
+            matches.forEach((match) => {
+                const segment = match[1].trim();
+                segment.split(/\s+/).forEach((item) => {
+                    const parts = item.split(",");
+                    if (parts.length < 2) {
+                        return;
+                    }
+                    const lon = safeNumber(parts[0], NaN);
+                    const lat = safeNumber(parts[1], NaN);
+                    const alt = safeNumber(parts[2], 0);
+                    if (!Number.isFinite(lon) || !Number.isFinite(lat)) {
+                        return;
+                    }
+                    points.push({ lon, lat, alt });
+                });
+            });
+
+            if (!points.length) {
+                throw new Error("未从 KML / OVKML 解析到有效坐标");
+            }
+            return points;
+        }
+
+        function parseBeijingTime(text) {
+            const normalized = String(text || "").trim().replace(/[：]/g, ":");
+            const match = normalized.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/);
+            if (!match) {
+                throw new Error("时间格式应为 2024-01-03 08:30");
+            }
+
+            const [, year, month, day, hour, minute] = match.map(Number);
+            return Math.floor(Date.UTC(year, month - 1, day, hour - 8, minute) / 1000);
+        }
+
+        function interpolateTimestamps(startTs, endTs, count) {
+            if (count <= 0) {
+                return [];
+            }
+            if (endTs < startTs) {
+                throw new Error("结束时间不能早于开始时间");
+            }
+            if (count === 1) {
+                return [startTs];
+            }
+
+            const step = (endTs - startTs) / (count - 1);
+            return Array.from({ length: count }, (_, index) => Math.round(startTs + step * index));
+        }
+
+        function normalizeTrackRows(rows) {
+            const points = [];
+            rows.forEach((row, index) => {
+                const lon = safeNumber(row.longitude ?? row.Longitude, NaN);
+                const lat = safeNumber(row.latitude ?? row.Latitude, NaN);
+                const time = safeNumber(row.dataTime ?? row.Time, NaN);
+                if (!Number.isFinite(lon) || !Number.isFinite(lat) || !Number.isFinite(time)) {
+                    return;
+                }
+
+                points.push({
+                    originalIndex: index,
+                    time: Math.round(time),
+                    lon,
+                    lat,
+                    headingSource: safeNumber(row.heading ?? row.Angle, NaN),
+                    accuracy: safeNumber(row.accuracy, NaN),
+                    speedSource: safeNumber(row.speed ?? row.Speed, NaN),
+                    altitude: safeNumber(row.altitude ?? row.Height, 0),
+                    locType: safeNumber(row.locType, 1),
+                    stepType: safeNumber(row.stepType, 0),
+                    isBackForeground: Number.isFinite(safeNumber(row.isBackForeground, NaN))
+                        ? Math.round(safeNumber(row.isBackForeground, NaN))
+                        : null,
+                });
+            });
+
+            points.sort((a, b) => (a.time - b.time) || (a.originalIndex - b.originalIndex));
+
+            let cumulativeDistance = 0;
+            for (let index = 0; index < points.length; index++) {
+                const point = points[index];
+                const previous = points[index - 1];
+                if (!previous) {
+                    point.stepDistance = 0;
+                    point.distance = 0;
+                    point.heading = Number.isFinite(point.headingSource) ? Math.round(point.headingSource) : 0;
+                    point.speed = Number.isFinite(point.speedSource) && point.speedSource >= 0 ? point.speedSource : 0;
+                    continue;
+                }
+
+                const stepDistance = haversineDistance(previous.lon, previous.lat, point.lon, point.lat);
+                const deltaSeconds = Math.max(0, point.time - previous.time);
+                cumulativeDistance += stepDistance;
+
+                point.stepDistance = stepDistance;
+                point.distance = cumulativeDistance;
+                point.heading = Number.isFinite(point.headingSource)
+                    ? Math.round(point.headingSource)
+                    : calculateHeading(previous.lon, previous.lat, point.lon, point.lat);
+                point.speed = Number.isFinite(point.speedSource) && point.speedSource >= 0
+                    ? point.speedSource
+                    : (deltaSeconds > 0 ? (stepDistance / deltaSeconds) * 3.6 : 0);
+            }
+
+            const photoFlagValue = detectPhotoFlagValue(points);
+            points.forEach((point) => {
+                point.isPhoto = photoFlagValue !== null && point.isBackForeground === photoFlagValue;
+            });
+
+            return { points, photoFlagValue };
+        }
+
+        function detectPhotoFlagValue(points) {
+            const counts = new Map();
+            points.forEach((point) => {
+                if (Number.isInteger(point.isBackForeground)) {
+                    counts.set(point.isBackForeground, (counts.get(point.isBackForeground) || 0) + 1);
+                }
+            });
+
+            if (!counts.has(0) || !counts.has(1)) {
+                return null;
+            }
+
+            const total = (counts.get(0) || 0) + (counts.get(1) || 0);
+            const minority = (counts.get(0) || 0) <= (counts.get(1) || 0) ? 0 : 1;
+            const minorityCount = counts.get(minority) || 0;
+            return total > 0 && minorityCount / total <= PHOTO_HEURISTIC_THRESHOLD ? minority : null;
+        }
+
+        function renderSingleSummary() {
+            const points = state.single.points;
+            if (!points.length) {
+                return;
+            }
+
+            const first = points[0];
+            const last = points[points.length - 1];
+            const duration = Math.max(0, last.time - first.time);
+            const totalDistance = last.distance || 0;
+            const validAltitudes = points.map((point) => point.altitude).filter((altitude) => Number.isFinite(altitude));
+            const minAltitude = validAltitudes.length ? Math.min(...validAltitudes) : 0;
+            const maxAltitude = validAltitudes.length ? Math.max(...validAltitudes) : 0;
+            const photoCount = points.filter((point) => point.isPhoto).length;
+            const avgSpeed = duration > 0 ? (totalDistance / duration) * 3.6 : 0;
+
+            ui.single.statsHint.textContent = `${formatDateTime(first.time)} 到 ${formatDateTime(last.time)}，总里程采用页面重算结果。`;
+            ui.single.statsGrid.innerHTML = "";
+
+            const stats = [
+                createStatCard("轨迹点数", String(points.length), `${formatDuration(duration)}`),
+                createStatCard("总里程", formatDistance(totalDistance), `平均速度 ${formatSpeed(avgSpeed)}`),
+                createStatCard("时间跨度", formatDuration(duration), `${formatDate(first.time)} → ${formatDate(last.time)}`),
+                createStatCard("海拔范围", `${Math.round(minAltitude)}-${Math.round(maxAltitude)} m`, "按现有 altitude 字段显示"),
+                createStatCard("照片标记", `${photoCount}`, state.single.photoFlagValue === null ? "未识别到照片标记值" : `isBackForeground=${state.single.photoFlagValue}`),
+                createStatCard("输入类型", formatLabel(state.single.sourceFormat), state.single.fileName),
+            ];
+
+            stats.forEach((node) => ui.single.statsGrid.appendChild(node));
+        }
+
+        function renderSingleMap() {
+            clearMapLayers();
+            const points = state.single.points;
+            if (!points.length) {
+                return;
+            }
+
+            const map = state.map.leaflet;
+            const coords = points.map((point) => [point.lat, point.lon]);
+
+            state.map.baseLineLayer = L.polyline(coords, {
+                color: "#8ea5b3",
+                weight: 4,
+                opacity: 0.5,
+            }).addTo(map);
+
+            state.map.playedLineLayer = L.polyline([coords[0]], {
+                color: "#0d7c8f",
+                weight: 5,
+                opacity: 0.95,
+                lineJoin: "round",
+            }).addTo(map);
+
+            state.map.startMarker = createPinMarker(points[0], "#0d7c8f", "起点");
+            state.map.endMarker = createPinMarker(points[points.length - 1], "#ef7d24", "终点");
+
+            const photoPoints = points.filter((point) => point.isPhoto);
+            if (photoPoints.length) {
+                photoPoints.forEach((point) => {
+                    const marker = L.circleMarker([point.lat, point.lon], {
+                        radius: 5,
+                        color: "#ef7d24",
+                        weight: 2,
+                        fillColor: "#fff2de",
+                        fillOpacity: 1,
+                    }).bindPopup(`照片标记<br>${formatDateTime(point.time)}`);
+                    state.map.photoLayer.addLayer(marker);
+                });
+                state.map.photoLayer.addTo(map);
+            }
+
+            state.map.currentMarker = L.circleMarker([points[0].lat, points[0].lon], {
+                radius: 8,
+                color: "#fff",
+                weight: 3,
+                fillColor: "#18313f",
+                fillOpacity: 1,
+            }).addTo(map);
+
+            map.fitBounds(L.latLngBounds(coords), { padding: [40, 40], maxZoom: 15 });
+            ui.mapModeChip.textContent = "单段补轨 / 路径预览";
+            ui.mapNote.textContent = "单段回放：路径和当前点位会同步更新。";
+        }
+
+        function updateSingleFrame(index) {
+            const points = state.single.points;
+            if (!points.length) {
+                return;
+            }
+
+            const clampedIndex = Math.min(Math.max(index, 0), points.length - 1);
+            state.single.playbackIndex = clampedIndex;
+
+            const point = points[clampedIndex];
+            const traveled = points.slice(0, clampedIndex + 1).map((item) => [item.lat, item.lon]);
+            if (state.map.playedLineLayer) {
+                state.map.playedLineLayer.setLatLngs(traveled);
+            }
+            if (state.map.currentMarker) {
+                state.map.currentMarker.setLatLng([point.lat, point.lon]);
+            }
+
+            ui.single.progressSlider.value = String(clampedIndex);
+            const progress = points.length > 1 ? (clampedIndex / (points.length - 1)) * 100 : 100;
+            ui.single.progressFill.style.width = `${progress.toFixed(2)}%`;
+            ui.single.currentTime.textContent = formatDateTime(point.time);
+            ui.single.currentCoord.textContent = `${point.lat.toFixed(6)}, ${point.lon.toFixed(6)}`;
+            ui.single.currentSpeed.textContent = formatSpeed(point.speed);
+            ui.single.currentDistance.textContent = formatDistance(point.distance);
+            ui.single.currentAltitude.textContent = `${Math.round(point.altitude)} m`;
+            ui.single.currentPhoto.textContent = point.isPhoto ? "是" : "否";
+        }
+
+        function startSinglePlayback() {
+            if (!state.single.points.length) {
+                return;
+            }
+            pauseSinglePlayback(false);
+            ui.single.playBtn.disabled = true;
+            ui.single.pauseBtn.disabled = false;
+
+            const delay = Math.max(18, Math.round(1000 / state.single.speed));
+            state.single.playbackTimer = window.setInterval(() => {
+                if (state.single.playbackIndex >= state.single.points.length - 1) {
+                    pauseSinglePlayback();
+                    return;
+                }
+                updateSingleFrame(state.single.playbackIndex + 1);
+            }, delay);
+        }
+
+        function restartSinglePlayback() {
+            if (!state.single.playbackTimer) {
+                return;
+            }
+            startSinglePlayback();
+        }
+
+        function pauseSinglePlayback(resetButtons = true) {
+            if (state.single.playbackTimer) {
+                window.clearInterval(state.single.playbackTimer);
+                state.single.playbackTimer = null;
+            }
+            if (resetButtons) {
+                ui.single.playBtn.disabled = false;
+                ui.single.pauseBtn.disabled = true;
+            }
+        }
+
+        function resetSinglePlayback() {
+            pauseSinglePlayback(false);
+            updateSingleFrame(0);
+            ui.single.playBtn.disabled = false;
+            ui.single.pauseBtn.disabled = true;
+        }
+
+        function exportSingleCsv() {
+            if (!state.single.points.length) {
+                return;
+            }
+            const csv = buildStandardCsv(state.single.points);
+            const safeName = (state.single.fileName || "track").replace(/\.[^.]+$/, "");
+            downloadText(`${safeName}_steplife.csv`, csv);
+        }
+
+        function buildStandardCsv(points) {
+            const lines = [OUTPUT_HEADERS.join(",")];
+            points.forEach((point) => {
+                const row = {
+                    dataTime: point.time,
+                    locType: point.locType || 1,
+                    longitude: formatNumber(point.lon),
+                    latitude: formatNumber(point.lat),
+                    heading: Math.round(point.heading || 0),
+                    accuracy: Number.isFinite(point.accuracy) ? formatNumber(point.accuracy) : -20,
+                    speed: formatNumber(point.speed || 0),
+                    distance: formatNumber(point.distance || 0),
+                    isBackForeground: point.isPhoto
+                        ? state.single.photoFlagValue ?? 0
+                        : (point.isBackForeground ?? 1),
+                    stepType: point.stepType || 0,
+                    altitude: formatNumber(point.altitude || 0),
+                };
+                lines.push(OUTPUT_HEADERS.map((key) => row[key]).join(","));
+            });
+            return lines.join("\\n");
+        }
+
+        function prepareFullDataset() {
+            const points = state.full.points;
+            const years = Array.from(new Set(points.map((point) => getBeijingYear(point.time)))).sort((a, b) => a - b);
+            const stays = deriveStayLocations(points);
+            const placeClusters = clusterVisitLocations(stays);
+
+            state.full.years = years;
+            state.full.heatPoints = buildHeatPoints(points);
+            state.full.stayLocations = stays;
+            state.full.placeClusters = placeClusters;
+            state.full.allVisitClusters = getRevisitClustersForYear(placeClusters, "all");
+            state.full.memoryCards = buildMemoryCards(points, state.full.allVisitClusters);
+            state.full.annualYearIndex = years.length ? years.length - 1 : 0;
+        }
+
+        function populateYearOptions() {
+            ui.full.yearSelect.innerHTML = '<option value="all">全部年份</option>';
+            state.full.years.forEach((year) => {
+                const option = document.createElement("option");
+                option.value = String(year);
+                option.textContent = String(year);
+                ui.full.yearSelect.appendChild(option);
+            });
+            ui.full.yearSelect.value = "all";
+
+            ui.full.annualSlider.min = "0";
+            ui.full.annualSlider.max = String(Math.max(0, state.full.years.length - 1));
+            ui.full.annualSlider.value = String(state.full.annualYearIndex);
+            updateAnnualControls();
+        }
+
+        function updateAnnualControls() {
+            const hasYears = state.full.years.length > 0;
+            const showAnnual = state.full.mode === "annual";
+            ui.full.yearFilterBlock.classList.toggle("hidden", showAnnual);
+            ui.full.annualControlBlock.classList.toggle("hidden", !showAnnual);
+            ui.full.annualSlider.disabled = !hasYears || !showAnnual;
+            ui.full.annualPlayBtn.disabled = !hasYears || !showAnnual;
+            ui.full.annualPauseBtn.disabled = !hasYears || !showAnnual;
+            ui.full.annualYearLabel.textContent = hasYears ? String(state.full.years[state.full.annualYearIndex] || state.full.years[0]) : "-";
+            ui.full.summaryHint.textContent = showAnnual
+                ? "年度扩张只看地点首次被解锁的年份；这里不再叠加年份筛选，避免两套时间条件混在一起。"
+                : "热力图和常去地点支持年份筛选，重点看某一年里的密度和常出现的地点。";
+            renderFullModeExplain();
+        }
+
+        function setFullMode(mode) {
+            state.full.mode = mode;
+            ui.full.modeButtons.forEach((button) => button.classList.toggle("active", button.dataset.fullMode === mode));
+            updateAnnualControls();
+            refreshFullMode();
+        }
+
+        function renderFullModeExplain() {
+            const selectedYear = state.full.selectedYear === "all" ? "全部年份" : `${state.full.selectedYear} 年`;
+
+            if (state.full.mode === "heat") {
+                ui.full.modeExplainTitle.textContent = "热力图看哪里最常出现";
+                ui.full.modeExplainCopy.textContent = `热力图现在会先把附近点位合并，再把超高热点做压缩，所以常住地不会糊成一大团，去过一两次的地方也更容易被看见。当前筛选：${selectedYear}。`;
+                ui.full.modeExplainList.innerHTML = [
+                    buildExplainItem("#0d7c8f", "蓝绿色较淡：出现过，但频率不高"),
+                    buildExplainItem("#efb74d", "金黄色：这一带出现得比较频繁"),
+                    buildExplainItem("#bf3c1d", "橙红色：这是最强热点，但强度已经做过压缩，不会轻易吞掉其他地方"),
+                ].join("");
+                return;
+            }
+
+            if (state.full.mode === "revisit") {
+                ui.full.modeExplainTitle.textContent = "常去地点看你反复回去哪里";
+                ui.full.modeExplainCopy.textContent = `先从连续轨迹里找出停留片段，再把约 320 米内的停留片段合并成一个地点。只保留至少在 2 个独立日期里出现过的地点，所以它看的是“常去哪里”，不是“怎么走过去”。当前筛选：${selectedYear}。`;
+                ui.full.modeExplainList.innerHTML = [
+                    buildExplainItem("#0d7c8f", "蓝绿色圆点：这个地点没有照片标记，圆越大表示回去的日期越多"),
+                    buildExplainItem("#ef7d24", "橙色圆点：这个常去地点附近还出现过照片标记"),
+                    buildExplainItem("#fff7ef", "弹窗里的“停留片段”表示被识别出的停留次数，“独立日期”表示你隔天又回来过几次"),
+                ].join("");
+                return;
+            }
+
+            ui.full.modeExplainTitle.textContent = "年度扩张看地点在哪一年第一次出现";
+            ui.full.modeExplainCopy.textContent = "年度扩张沿用和常去地点相同的地点簇，不会每年重新算一遍。点击“从头播放年度扩张”会从最早年份开始播放。";
+            ui.full.modeExplainList.innerHTML = [
+                buildExplainItem("#ef7d24", "橙色：这个地点在当前年份第一次被解锁"),
+                buildExplainItem("#0d7c8f", "蓝绿色：这个地点在更早年份已经出现过，今年只是继续保留"),
+                buildExplainItem("#fff7ef", "圆越大：到当前年份为止，这个地点累计出现过的独立日期越多"),
+            ].join("");
+        }
+
+        function refreshFullMode() {
+            if (!state.full.points.length) {
+                return;
+            }
+
+            stopAnnualPlayback(false);
+            clearMapLayers();
+
+            if (state.full.mode === "heat") {
+                renderHeatmap();
+            } else if (state.full.mode === "revisit") {
+                renderRevisitMap();
+            } else {
+                renderAnnualView();
+            }
+        }
+
+        function renderHeatmap() {
+            const filtered = filterPointsByYear(state.full.points, state.full.selectedYear);
+            const heatPoints = buildHeatPoints(filtered);
+            if (!heatPoints.length) {
+                setStatus(ui.full.status, "当前年份筛选下没有可显示的热力点。", "error");
+                return;
+            }
+
+            state.map.heatLayer = L.heatLayer(heatPoints, {
+                radius: 20,
+                blur: 22,
+                minOpacity: 0.34,
+                maxZoom: 13,
+                gradient: {
+                    0.12: "#8fd1c4",
+                    0.3: "#36a39b",
+                    0.55: "#d8c46d",
+                    0.78: "#ef8c3a",
+                    1.0: "#bf3c1d",
+                },
+            }).addTo(state.map.leaflet);
+
+            if (state.full.showPhotos) {
+                renderPhotoLayer(filtered);
+            }
+
+            fitMapToPoints(filtered);
+            ui.mapModeChip.textContent = "全量足迹 / 人生热力图";
+            ui.mapNote.textContent = state.full.selectedYear === "all"
+                ? "热力图：颜色越热，说明那一带出现得越频繁。"
+                : `${state.full.selectedYear} 年热力图：只看这一年里的点位密度。`;
+        }
+
+        function renderRevisitMap() {
+            const filtered = filterPointsByYear(state.full.points, state.full.selectedYear);
+            const clusters = getRevisitClustersForYear(state.full.placeClusters, state.full.selectedYear);
+
+            if (!clusters.length) {
+                setStatus(ui.full.status, "当前数据下没有足够稳定的停留地点可识别为常去地点。", "error");
+                return;
+            }
+
+            clusters.forEach((cluster) => {
+                const marker = L.circleMarker([cluster.lat, cluster.lon], {
+                    radius: Math.min(24, 7 + cluster.dayCount * 1.8),
+                    color: "#18313f",
+                    weight: 1.5,
+                    fillColor: cluster.photoCount > 0 ? "#ef7d24" : "#0d7c8f",
+                    fillOpacity: 0.75,
+                }).bindPopup(
+                    `<strong>${cluster.dayCount} 天里来过这里</strong><br>` +
+                    `停留片段：${cluster.visits}<br>` +
+                    `独立日期：${cluster.dayCount}<br>` +
+                    `首次到访：${formatDate(cluster.firstTime)}<br>` +
+                    `最近到访：${formatDate(cluster.lastTime)}<br>` +
+                    `照片标记：${cluster.photoCount}`
+                );
+                state.map.revisitLayer.addLayer(marker);
+            });
+            state.map.revisitLayer.addTo(state.map.leaflet);
+
+            if (state.full.showPhotos) {
+                renderPhotoLayer(filtered);
+            }
+
+            fitMapToClusters(clusters);
+            ui.mapModeChip.textContent = "全量足迹 / 常去地点";
+            ui.mapNote.textContent = state.full.selectedYear === "all"
+                ? "常去地点：把反复停留在同一片区域的记录合并成一个地点。圆越大，说明去过的独立日期越多。"
+                : `${state.full.selectedYear} 年常去地点只显示这一年里反复出现过的地点，圆大小按独立日期计算。`;
+        }
+
+        function renderAnnualView() {
+            const year = state.full.years[state.full.annualYearIndex];
+            ui.full.annualSlider.value = String(state.full.annualYearIndex);
+            ui.full.annualYearLabel.textContent = year ? String(year) : "-";
+            clearMapLayers();
+
+            if (!year) {
+                return;
+            }
+
+            const clusters = getAnnualClustersUpToYear(state.full.placeClusters, year);
+            const cumulativePoints = state.full.points.filter((point) => getBeijingYear(point.time) <= year);
+            const unlockedThisYear = clusters.filter((cluster) => cluster.firstYear === year);
+
+            clusters.forEach((cluster) => {
+                const marker = L.circleMarker([cluster.lat, cluster.lon], {
+                    radius: Math.min(22, 6 + cluster.dayCount * 1.4),
+                    color: "#fff7ef",
+                    weight: 1.5,
+                    fillColor: cluster.firstYear === year ? "#ef7d24" : "#0d7c8f",
+                    fillOpacity: cluster.firstYear === year ? 0.88 : 0.45,
+                }).bindPopup(
+                    `<strong>${cluster.firstYear} 首次解锁</strong><br>` +
+                    `累计停留片段：${cluster.visits}<br>` +
+                    `累计出现日期：${cluster.dayCount}<br>` +
+                    `首次到访：${formatDate(cluster.firstTime)}`
+                );
+                state.map.annualLayer.addLayer(marker);
+            });
+            state.map.annualLayer.addTo(state.map.leaflet);
+
+            if (state.full.showPhotos) {
+                renderPhotoLayer(cumulativePoints);
+            }
+
+            fitMapToClusters(clusters);
+            ui.mapModeChip.textContent = `全量足迹 / 年度扩张 ${year}`;
+            ui.mapNote.textContent = `年度扩张：${year} 年新亮起 ${unlockedThisYear.length} 个地点。橙色是本年第一次出现，蓝绿色是更早已解锁的地点。`;
+        }
+
+        function startAnnualPlayback() {
+            if (!state.full.years.length) {
+                return;
+            }
+            stopAnnualPlayback(false);
+            state.full.annualYearIndex = 0;
+            renderAnnualView();
+            ui.full.annualPlayBtn.disabled = true;
+            ui.full.annualPauseBtn.disabled = false;
+
+            state.full.annualTimer = window.setInterval(() => {
+                if (state.full.annualYearIndex >= state.full.years.length - 1) {
+                    stopAnnualPlayback();
+                    return;
+                }
+                state.full.annualYearIndex += 1;
+                renderAnnualView();
+            }, 1200);
+        }
+
+        function stopAnnualPlayback(resetButtons = true) {
+            if (state.full.annualTimer) {
+                window.clearInterval(state.full.annualTimer);
+                state.full.annualTimer = null;
+            }
+            if (resetButtons) {
+                ui.full.annualPlayBtn.disabled = state.full.mode !== "annual" || !state.full.years.length;
+                ui.full.annualPauseBtn.disabled = true;
+            }
+        }
+
+        function renderFullSummary() {
+            const points = state.full.points;
+            const years = state.full.years;
+            const uniqueDays = new Set(points.map((point) => getBeijingDayKey(point.time)));
+            const photoCount = points.filter((point) => point.isPhoto).length;
+            const summaryStats = [
+                createStatCard("轨迹点数", String(points.length), state.full.fileName),
+                createStatCard("活跃天数", String(uniqueDays.size), `${years[0]}-${years[years.length - 1]}`),
+                createStatCard("常去地点", String(state.full.allVisitClusters.length), "基于停留点聚类"),
+                createStatCard("照片标记", String(photoCount), state.full.photoFlagValue === null ? "未识别到少数值" : `isBackForeground=${state.full.photoFlagValue}`),
+                createStatCard("时间跨度", years.length ? `${years[0]}-${years[years.length - 1]}` : "-", `${points.length ? formatDate(points[0].time) : "-"} → ${points.length ? formatDate(points[points.length - 1].time) : "-"}`),
+                createStatCard("热力网格", String(buildHeatPoints(points).length), "附近点位会先合并，再做强度压缩"),
+            ];
+
+            ui.full.summaryGrid.innerHTML = "";
+            summaryStats.forEach((node) => ui.full.summaryGrid.appendChild(node));
+        }
+
+        function renderMemoryCards() {
+            ui.full.memoryGrid.innerHTML = "";
+            state.full.memoryCards.forEach((card) => {
+                const node = document.createElement("article");
+                node.className = "memory-card";
+                node.innerHTML = `
+                    <div class="memory-title">${escapeHtml(card.title)}</div>
+                    <div class="memory-value">${escapeHtml(card.value)}</div>
+                    <div class="memory-detail">${escapeHtml(card.detail)}</div>
+                `;
+                ui.full.memoryGrid.appendChild(node);
+            });
+        }
+
+        function buildMemoryCards(points, revisitClusters) {
+            if (!points.length) {
+                return [];
+            }
+
+            const cards = [];
+            const days = groupPointsByDay(points);
+            const densestDay = [...days.entries()].sort((a, b) => b[1].length - a[1].length)[0];
+            const highestPoint = points.reduce((best, point) => point.altitude > best.altitude ? point : best, points[0]);
+            const latestPoint = points.reduce((best, point) => getBeijingHour(point.time) > getBeijingHour(best.time) ? point : best, points[0]);
+            const photoDays = state.full.photoFlagValue === null
+                ? []
+                : [...days.entries()]
+                    .map(([day, list]) => ({ day, count: list.filter((point) => point.isPhoto).length }))
+                    .filter((item) => item.count > 0)
+                    .sort((a, b) => b.count - a.count);
+
+            if (revisitClusters.length) {
+                const topCluster = revisitClusters[0];
+                cards.push({
+                    title: "最常回去的地方",
+                    value: `${topCluster.visits} 次`,
+                    detail: `首次 ${formatDate(topCluster.firstTime)} · 最近 ${formatDate(topCluster.lastTime)} · 独立日期 ${topCluster.dayCount}`,
+                });
+            }
+
+            cards.push({
+                title: "记录最密的一天",
+                value: densestDay ? `${densestDay[1].length} 个点` : "-",
+                detail: densestDay ? `${densestDay[0]} 这一天最活跃` : "暂无数据",
+            });
+
+            cards.push({
+                title: "海拔最高点",
+                value: `${Math.round(highestPoint.altitude || 0)} m`,
+                detail: `${formatDateTime(highestPoint.time)} · ${highestPoint.lat.toFixed(4)}, ${highestPoint.lon.toFixed(4)}`,
+            });
+
+            cards.push({
+                title: "最晚还在路上的时刻",
+                value: `${padNumber(getBeijingHour(latestPoint.time))}:${padNumber(getBeijingMinute(latestPoint.time))}`,
+                detail: `${formatDate(latestPoint.time)} · 取全天最晚时间点`,
+            });
+
+            if (photoDays.length) {
+                cards.push({
+                    title: "拍照最密的一天",
+                    value: `${photoDays[0].count} 个标记`,
+                    detail: `${photoDays[0].day} · 基于 isBackForeground 少数值启发式`,
+                });
+            }
+
+            return cards.slice(0, 5);
+        }
+
+        function buildHeatPoints(points) {
+            if (!points.length) {
+                return [];
+            }
+
+            const referenceLat = points.reduce((sum, point) => sum + point.lat, 0) / points.length;
+            const cosLat = Math.max(0.2, Math.cos(referenceLat * Math.PI / 180));
+            const metersPerLat = 111320;
+            const metersPerLon = 111320 * cosLat;
+            const cellSize = points.length > 40000 ? 900 : 700;
+            const cells = new Map();
+
+            points.forEach((point) => {
+                const x = Math.round((point.lon * metersPerLon) / cellSize);
+                const y = Math.round((point.lat * metersPerLat) / cellSize);
+                const key = `${x}:${y}`;
+
+                if (!cells.has(key)) {
+                    cells.set(key, {
+                        latSum: 0,
+                        lonSum: 0,
+                        count: 0,
+                        photoCount: 0,
+                    });
+                }
+
+                const cell = cells.get(key);
+                cell.latSum += point.lat;
+                cell.lonSum += point.lon;
+                cell.count += 1;
+                cell.photoCount += point.isPhoto ? 1 : 0;
+            });
+
+            const aggregated = Array.from(cells.values()).map((cell) => {
+                const rawWeight = cell.count + cell.photoCount * 0.35;
+                return {
+                    lat: cell.latSum / cell.count,
+                    lon: cell.lonSum / cell.count,
+                    rawWeight,
+                };
+            });
+
+            const maxWeight = aggregated.reduce((max, item) => Math.max(max, item.rawWeight), 1);
+            return aggregated.map((item) => {
+                const normalized = Math.log1p(item.rawWeight) / Math.log1p(maxWeight);
+                const intensity = 0.16 + normalized * 0.84;
+                return [item.lat, item.lon, Number(intensity.toFixed(4))];
+            });
+        }
+
+        function deriveStayLocations(points) {
+            if (!points.length) {
+                return [];
+            }
+
+            const maxClusterRadius = 220;
+            const maxGapSeconds = 45 * 60;
+            const minDuration = 20 * 60;
+            const minCount = 6;
+
+            const stays = [];
+            let cluster = [points[0]];
+            let latSum = points[0].lat;
+            let lonSum = points[0].lon;
+
+            function flushCluster() {
+                if (!cluster.length) {
+                    return;
+                }
+                const duration = cluster[cluster.length - 1].time - cluster[0].time;
+                if (duration >= minDuration || cluster.length >= minCount) {
+                    stays.push({
+                        lat: latSum / cluster.length,
+                        lon: lonSum / cluster.length,
+                        startTime: cluster[0].time,
+                        endTime: cluster[cluster.length - 1].time,
+                        duration,
+                        dayKey: getBeijingDayKey(cluster[0].time),
+                        photoCount: cluster.filter((point) => point.isPhoto).length,
+                    });
+                }
+            }
+
+            for (let index = 1; index < points.length; index++) {
+                const current = points[index];
+                const previous = points[index - 1];
+                const centroidLat = latSum / cluster.length;
+                const centroidLon = lonSum / cluster.length;
+                const gap = current.time - previous.time;
+                const withinRadius = haversineDistance(centroidLon, centroidLat, current.lon, current.lat) <= maxClusterRadius;
+
+                if (withinRadius && gap <= maxGapSeconds) {
+                    cluster.push(current);
+                    latSum += current.lat;
+                    lonSum += current.lon;
+                } else {
+                    flushCluster();
+                    cluster = [current];
+                    latSum = current.lat;
+                    lonSum = current.lon;
+                }
+            }
+            flushCluster();
+
+            if (stays.length >= 3) {
+                return stays;
+            }
+
+            const dailyAnchors = [];
+            groupPointsByDay(points).forEach((list, dayKey) => {
+                const midPoint = list[Math.floor(list.length / 2)];
+                dailyAnchors.push({
+                    lat: midPoint.lat,
+                    lon: midPoint.lon,
+                    startTime: list[0].time,
+                    endTime: list[list.length - 1].time,
+                    duration: list[list.length - 1].time - list[0].time,
+                    dayKey,
+                    photoCount: list.filter((point) => point.isPhoto).length,
+                });
+            });
+            return dailyAnchors;
+        }
+
+        function clusterVisitLocations(stays) {
+            const clusters = [];
+            const clusterRadius = 320;
+
+            stays.forEach((stay) => {
+                let target = null;
+                let closestDistance = Infinity;
+                for (const cluster of clusters) {
+                    const distance = haversineDistance(cluster.lon, cluster.lat, stay.lon, stay.lat);
+                    if (distance <= clusterRadius && distance < closestDistance) {
+                        target = cluster;
+                        closestDistance = distance;
+                    }
+                }
+
+                if (!target) {
+                    clusters.push({
+                        lat: stay.lat,
+                        lon: stay.lon,
+                        stays: [stay],
+                    });
+                    return;
+                }
+
+                const totalVisits = target.stays.length + 1;
+                target.lat = ((target.lat * target.stays.length) + stay.lat) / totalVisits;
+                target.lon = ((target.lon * target.stays.length) + stay.lon) / totalVisits;
+                target.stays.push(stay);
+            });
+
+            return clusters
+                .map((cluster) => summarizeCluster(cluster, cluster.stays))
+                .sort((a, b) => b.visits - a.visits);
+        }
+
+        function summarizeCluster(baseCluster, stays) {
+            const validStays = stays
+                .slice()
+                .sort((left, right) => left.startTime - right.startTime);
+
+            const dayKeys = new Set(validStays.map((stay) => stay.dayKey));
+            const photoCount = validStays.reduce((sum, stay) => sum + stay.photoCount, 0);
+            const firstTime = validStays.length ? validStays[0].startTime : 0;
+            const lastTime = validStays.length ? Math.max(...validStays.map((stay) => stay.endTime)) : 0;
+            const firstYear = validStays.length ? Math.min(...validStays.map((stay) => getBeijingYear(stay.startTime))) : null;
+
+            return {
+                lat: baseCluster.lat,
+                lon: baseCluster.lon,
+                stays: validStays,
+                visits: validStays.length,
+                dayCount: dayKeys.size,
+                photoCount,
+                firstTime,
+                lastTime,
+                firstYear,
+            };
+        }
+
+        function getRevisitClustersForYear(clusters, selectedYear) {
+            return clusters
+                .map((cluster) => {
+                    const stays = selectedYear === "all"
+                        ? cluster.stays
+                        : cluster.stays.filter((stay) => getBeijingYear(stay.startTime) === Number(selectedYear));
+                    return stays.length ? summarizeCluster(cluster, stays) : null;
+                })
+                .filter((cluster) => cluster && cluster.dayCount >= 2)
+                .sort((a, b) => {
+                    if (b.dayCount !== a.dayCount) {
+                        return b.dayCount - a.dayCount;
+                    }
+                    return b.visits - a.visits;
+                });
+        }
+
+        function getAnnualClustersUpToYear(clusters, year) {
+            return clusters
+                .map((cluster) => {
+                    const stays = cluster.stays.filter((stay) => getBeijingYear(stay.startTime) <= year);
+                    return stays.length ? summarizeCluster(cluster, stays) : null;
+                })
+                .filter(Boolean)
+                .sort((a, b) => {
+                    if (a.firstYear !== b.firstYear) {
+                        return a.firstYear - b.firstYear;
+                    }
+                    return b.dayCount - a.dayCount;
+                });
+        }
+
+        function groupPointsByDay(points) {
+            const map = new Map();
+            points.forEach((point) => {
+                const dayKey = getBeijingDayKey(point.time);
+                if (!map.has(dayKey)) {
+                    map.set(dayKey, []);
+                }
+                map.get(dayKey).push(point);
+            });
+            return map;
+        }
+
+        function renderPhotoLayer(points) {
+            const photoPoints = points.filter((point) => point.isPhoto);
+            if (!photoPoints.length) {
+                return;
+            }
+            photoPoints.forEach((point) => {
+                const marker = L.circleMarker([point.lat, point.lon], {
+                    radius: 4,
+                    color: "#ef7d24",
+                    weight: 1.5,
+                    fillColor: "#fff7ef",
+                    fillOpacity: 1,
+                }).bindPopup(`照片标记<br>${formatDateTime(point.time)}`);
+                state.map.photoLayer.addLayer(marker);
+            });
+            state.map.photoLayer.addTo(state.map.leaflet);
+        }
+
+        function filterPointsByYear(points, selectedYear) {
+            if (!points.length || selectedYear === "all") {
+                return points;
+            }
+            const numericYear = Number(selectedYear);
+            return points.filter((point) => getBeijingYear(point.time) === numericYear);
+        }
+
+        function clearMapLayers() {
+            const map = state.map.leaflet;
+            [
+                "baseLineLayer",
+                "playedLineLayer",
+                "currentMarker",
+                "startMarker",
+                "endMarker",
+                "heatLayer",
+            ].forEach((key) => {
+                if (state.map[key]) {
+                    map.removeLayer(state.map[key]);
+                    state.map[key] = null;
+                }
+            });
+
+            ["photoLayer", "revisitLayer", "annualLayer"].forEach((key) => {
+                state.map[key].clearLayers();
+                if (map.hasLayer(state.map[key])) {
+                    map.removeLayer(state.map[key]);
+                }
+            });
+        }
+
+        function fitMapToPoints(points) {
+            if (!points.length) {
+                return;
+            }
+            const bounds = L.latLngBounds(points.map((point) => [point.lat, point.lon]));
+            state.map.leaflet.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
+        }
+
+        function fitMapToClusters(clusters) {
+            if (!clusters.length) {
+                return;
+            }
+            const bounds = L.latLngBounds(clusters.map((item) => [item.lat, item.lon]));
+            state.map.leaflet.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
+        }
+
+        function createPinMarker(point, color, label) {
+            return L.circleMarker([point.lat, point.lon], {
+                radius: 8,
+                color: "#fff",
+                weight: 2,
+                fillColor: color,
+                fillOpacity: 1,
+            }).addTo(state.map.leaflet).bindPopup(`${label}<br>${formatDateTime(point.time)}`);
+        }
+
+        function createStatCard(label, value, meta) {
+            const node = document.createElement("article");
+            node.className = "stat-card";
+            node.innerHTML = `
+                <div class="stat-label">${escapeHtml(label)}</div>
+                <div class="stat-value">${escapeHtml(value)}</div>
+                <div class="stat-meta">${escapeHtml(meta || "")}</div>
+            `;
+            return node;
+        }
+
+        function buildExplainItem(color, text) {
+            return `
+                <div class="mode-explain-item">
+                    <span class="mode-dot" style="background:${color};"></span>
+                    <span>${escapeHtml(text)}</span>
+                </div>
+            `;
+        }
+
+        function setStatus(element, message, kind) {
+            element.textContent = message;
+            element.classList.remove("error", "success");
+            if (kind) {
+                element.classList.add(kind);
+            }
+        }
+
+        function readFileText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(String(reader.result || ""));
+                reader.onerror = () => reject(new Error("读取文件失败"));
+                reader.readAsText(file);
+            });
+        }
+
+        function updateUploadName(input, target, fallbackText) {
+            if (!target) {
+                return;
+            }
+            const fileName = input?.files?.[0]?.name;
+            target.textContent = fileName || fallbackText;
+        }
+
+        function downloadText(fileName, content) {
+            const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.download = fileName;
+            anchor.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function safeNumber(value, fallback) {
+            const numeric = Number(String(value ?? "").trim());
+            return Number.isFinite(numeric) ? numeric : fallback;
+        }
+
+        function haversineDistance(lon1, lat1, lon2, lat2) {
+            const toRad = (value) => value * Math.PI / 180;
+            const earthRadius = 6371000;
+            const phi1 = toRad(lat1);
+            const phi2 = toRad(lat2);
+            const deltaPhi = toRad(lat2 - lat1);
+            const deltaLambda = toRad(lon2 - lon1);
+            const a = Math.sin(deltaPhi / 2) ** 2
+                + Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) ** 2;
+            return 2 * earthRadius * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function calculateHeading(prevLon, prevLat, lon, lat) {
+            if (prevLon === lon && prevLat === lat) {
+                return 0;
+            }
+            const toRad = (value) => value * Math.PI / 180;
+            const toDeg = (value) => value * 180 / Math.PI;
+            const lon1 = toRad(prevLon);
+            const lat1 = toRad(prevLat);
+            const lon2 = toRad(lon);
+            const lat2 = toRad(lat);
+            const deltaLon = lon2 - lon1;
+            const x = Math.sin(deltaLon) * Math.cos(lat2);
+            const y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(deltaLon);
+            return Math.round((toDeg(Math.atan2(x, y)) + 360) % 360);
+        }
+
+        function getBeijingDate(ts) {
+            return new Date((ts + BEIJING_OFFSET_SECONDS) * 1000);
+        }
+
+        function getBeijingYear(ts) {
+            return getBeijingDate(ts).getUTCFullYear();
+        }
+
+        function getBeijingHour(ts) {
+            return getBeijingDate(ts).getUTCHours();
+        }
+
+        function getBeijingMinute(ts) {
+            return getBeijingDate(ts).getUTCMinutes();
+        }
+
+        function getBeijingDayKey(ts) {
+            const date = getBeijingDate(ts);
+            return `${date.getUTCFullYear()}-${padNumber(date.getUTCMonth() + 1)}-${padNumber(date.getUTCDate())}`;
+        }
+
+        function formatDateTime(ts) {
+            const date = getBeijingDate(ts);
+            return `${date.getUTCFullYear()}-${padNumber(date.getUTCMonth() + 1)}-${padNumber(date.getUTCDate())} ${padNumber(date.getUTCHours())}:${padNumber(date.getUTCMinutes())}:${padNumber(date.getUTCSeconds())}`;
+        }
+
+        function formatDate(ts) {
+            const date = getBeijingDate(ts);
+            return `${date.getUTCFullYear()}-${padNumber(date.getUTCMonth() + 1)}-${padNumber(date.getUTCDate())}`;
+        }
+
+        function formatDuration(seconds) {
+            if (!Number.isFinite(seconds) || seconds <= 0) {
+                return "0 分钟";
+            }
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            if (hours && minutes) {
+                return `${hours} 小时 ${minutes} 分`;
+            }
+            if (hours) {
+                return `${hours} 小时`;
+            }
+            return `${Math.max(1, minutes)} 分钟`;
+        }
+
+        function formatDistance(meters) {
+            if (!Number.isFinite(meters)) {
+                return "-";
+            }
+            if (meters >= 1000) {
+                return `${(meters / 1000).toFixed(2)} km`;
+            }
+            return `${meters.toFixed(0)} m`;
+        }
+
+        function formatSpeed(kmh) {
+            if (!Number.isFinite(kmh)) {
+                return "-";
+            }
+            return `${kmh.toFixed(2)} km/h`;
+        }
+
+        function formatLabel(format) {
+            const map = {
+                auto: "自动识别",
+                standard: "标准 CSV",
+                flight: "航班 CSV",
+                kml: "火车 KML",
+                ovkml: "奥维 OVKML",
+            };
+            return map[format] || format;
+        }
+
+        function formatNumber(value) {
+            if (Number.isInteger(value)) {
+                return String(value);
+            }
+            return Number(value || 0).toFixed(8).replace(/\.?0+$/, "") || "0";
+        }
+
+        function padNumber(value) {
+            return String(value).padStart(2, "0");
+        }
+
+        function escapeHtml(text) {
+            return String(text ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+    </script>
+</body>
+</html>
