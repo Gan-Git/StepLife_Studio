@@ -63,7 +63,7 @@
         }
 
         .sidebar {
-            width: min(430px, 38vw);
+            width: min(480px, 42vw);
             min-width: 360px;
             display: flex;
             flex-direction: column;
@@ -300,6 +300,112 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .resource-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .resource-groups {
+            display: grid;
+            gap: 12px;
+        }
+
+        .resource-section-copy {
+            margin: 0;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .resource-group {
+            display: grid;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 1px solid rgba(24, 49, 63, 0.08);
+            background: rgba(255, 255, 255, 0.36);
+        }
+
+        .resource-group-title {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .resource-group-copy {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .resource-card {
+            display: grid;
+            gap: 8px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(24, 49, 63, 0.1);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(247, 243, 236, 0.86));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
+        }
+
+        .resource-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .resource-card-title {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .resource-tag {
+            flex: none;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(13, 124, 143, 0.1);
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .resource-card-copy {
+            margin: 0;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .resource-card-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            min-height: 36px;
+            padding: 0 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(24, 49, 63, 0.14);
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--ink);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 8px 18px rgba(24, 49, 63, 0.08);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .resource-card-link:hover {
+            transform: translateY(-1px);
+            border-color: rgba(13, 124, 143, 0.28);
+            box-shadow: 0 10px 22px rgba(24, 49, 63, 0.12);
         }
 
         .file-input-hidden {
@@ -761,6 +867,65 @@
                         </div>
 
                         <div id="singleStatus" class="status">文件会在浏览器本地完成解析与转换，不经过服务端。</div>
+
+                        <div class="resource-groups">
+                            <div>
+                                <h3 class="resource-card-title">补轨资料</h3>
+                                <p class="resource-section-copy">先找轨迹点来源，再按教程把数据整理成可导入的一生足迹文件。</p>
+                            </div>
+
+                            <div class="resource-group">
+                                <div>
+                                    <h4 class="resource-group-title">找轨迹点</h4>
+                                    <p class="resource-group-copy">先去找火车或航班的轨迹点来源，再回到这里继续补轨。</p>
+                                </div>
+                                <div class="resource-grid">
+                                    <div class="resource-card">
+                                        <div class="resource-card-header">
+                                            <h3 class="resource-card-title">铁路车次来源</h3>
+                                            <span class="resource-tag">火车</span>
+                                        </div>
+                                        <p class="resource-card-copy">可按车次查询铁路轨迹点，适合火车补轨前先定位线路和坐标来源。</p>
+                                        <a class="resource-card-link" href="https://fog.vicc.wang/rails.html" target="_blank" rel="noopener noreferrer">打开铁路数据站</a>
+                                    </div>
+
+                                    <div class="resource-card">
+                                        <div class="resource-card-header">
+                                            <h3 class="resource-card-title">航班轨迹来源</h3>
+                                            <span class="resource-tag">飞机</span>
+                                        </div>
+                                        <p class="resource-card-copy">飞常准 FlightADSB 提供航班飞行轨迹回放和轨迹点查看，适合航班补轨。</p>
+                                        <a class="resource-card-link" href="https://flightadsb.variflight.com/" target="_blank" rel="noopener noreferrer">打开航班轨迹站</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="resource-group">
+                                <div>
+                                    <h4 class="resource-group-title">看教程</h4>
+                                    <p class="resource-group-copy">不确定怎么导出或怎么补的时候，先看对应教程再操作会更顺。</p>
+                                </div>
+                                <div class="resource-grid">
+                                    <div class="resource-card">
+                                        <div class="resource-card-header">
+                                            <h3 class="resource-card-title">铁路补轨教程</h3>
+                                            <span class="resource-tag">铁路</span>
+                                        </div>
+                                        <p class="resource-card-copy">第一次处理铁路补轨时，可以先按教程了解车次数据获取和整理流程。</p>
+                                        <a class="resource-card-link" href="https://mp.weixin.qq.com/s/2M-nhI65xb3S9UnIZBXoOA" target="_blank" rel="noopener noreferrer">打开铁路教程</a>
+                                    </div>
+
+                                    <div class="resource-card">
+                                        <div class="resource-card-header">
+                                            <h3 class="resource-card-title">奥维导出教程</h3>
+                                            <span class="resource-tag">奥维</span>
+                                        </div>
+                                        <p class="resource-card-copy">适合先看一遍奥维地图轨迹导出流程，再把导出的 OVKML 导入这里转换。</p>
+                                        <a class="resource-card-link" href="https://mp.weixin.qq.com/s/anFxLiqTnoF4mhHfB22hJA" target="_blank" rel="noopener noreferrer">打开奥维教程</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="singleStatsSection" class="section hidden">
