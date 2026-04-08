@@ -110,6 +110,45 @@
             line-height: 1.6;
         }
 
+        .corner-links {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 40;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .corner-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(24, 49, 63, 0.12);
+            background: rgba(255, 253, 250, 0.82);
+            color: var(--ink);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 10px 24px rgba(24, 49, 63, 0.1);
+            backdrop-filter: blur(14px);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .corner-link:hover {
+            transform: translateY(-1px);
+            border-color: rgba(13, 124, 143, 0.28);
+            box-shadow: 0 12px 28px rgba(24, 49, 63, 0.14);
+        }
+
+        .corner-link-star {
+            background: linear-gradient(135deg, rgba(239, 125, 36, 0.2), rgba(13, 124, 143, 0.14));
+            border-color: rgba(239, 125, 36, 0.24);
+        }
+
         .tabs {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -792,6 +831,12 @@
                 gap: 12px;
             }
 
+            .corner-links {
+                top: auto;
+                right: 12px;
+                bottom: 12px;
+            }
+
             .sidebar {
                 padding: 14px;
             }
@@ -808,6 +853,10 @@
     </style>
 </head>
 <body>
+    <nav class="corner-links" aria-label="快速入口">
+        <a class="corner-link" data-home-link href="./">返回首页</a>
+        <a class="corner-link corner-link-star" href="https://github.com/Gan-Git/StepLife_Studio" target="_blank" rel="noopener noreferrer">GitHub Star</a>
+    </nav>
     <div class="app-shell">
         <aside class="sidebar">
             <div class="brand">
@@ -1147,6 +1196,7 @@
         const ui = {};
 
         document.addEventListener("DOMContentLoaded", () => {
+            syncQuickLinks();
             collectElements();
             initMap();
             bindEvents();
@@ -1155,6 +1205,36 @@
             toggleTimeInputs();
             updateAnnualControls();
         });
+
+        function syncQuickLinks() {
+            const homeHref = resolveHomeHref();
+            document.querySelectorAll("[data-home-link]").forEach((link) => {
+                link.setAttribute("href", homeHref);
+            });
+        }
+
+        function resolveHomeHref() {
+            const normalizedPath = window.location.pathname.replace(/\\/g, "/");
+
+            if (window.location.protocol === "file:") {
+                return normalizedPath.includes("/output/") ? "../index.html" : "./";
+            }
+
+            if (window.location.hostname.endsWith("github.io")) {
+                const segments = normalizedPath.split("/").filter(Boolean);
+                return segments.length ? `/${segments[0]}/` : "/";
+            }
+
+            if (normalizedPath.includes("/output/")) {
+                return normalizedPath.slice(0, normalizedPath.indexOf("/output/") + 1);
+            }
+
+            if (/\/index\.html$/i.test(normalizedPath)) {
+                return normalizedPath.replace(/index\.html$/i, "");
+            }
+
+            return "./";
+        }
 
         function collectElements() {
             ui.tabButtons = Array.from(document.querySelectorAll(".tab-button"));
