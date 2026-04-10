@@ -326,6 +326,21 @@
             color: var(--ink);
         }
 
+        .signal-select-row {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 14px;
+            align-items: center;
+        }
+
+        .signal-select-row .label {
+            display: block;
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
         .text-input,
         .select-input,
         .range-input {
@@ -625,7 +640,7 @@
         .signal-result-header {
             display: flex;
             justify-content: space-between;
-            gap: 12px;
+            gap: 10px;
             align-items: start;
             flex-wrap: wrap;
         }
@@ -639,26 +654,26 @@
         }
 
         .signal-result-model {
-            margin-top: 6px;
+            margin-top: 4px;
             font-family: var(--font-display);
-            font-size: 24px;
-            line-height: 1.08;
+            font-size: 22px;
+            line-height: 1.1;
             letter-spacing: -0.04em;
             color: var(--ink);
         }
 
         .signal-result-series {
-            margin-top: 6px;
+            margin-top: 4px;
             color: var(--muted);
             font-size: 12px;
-            line-height: 1.55;
+            line-height: 1.45;
         }
 
         .signal-nickname-pill {
             display: inline-flex;
             align-items: center;
-            min-height: 34px;
-            padding: 0 12px;
+            min-height: 30px;
+            padding: 0 11px;
             border-radius: 999px;
             background: rgba(13, 124, 143, 0.1);
             color: var(--accent);
@@ -670,19 +685,19 @@
             margin: 0;
             color: var(--ink);
             font-size: 13px;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .signal-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
+            gap: 8px;
         }
 
         .signal-card {
             display: grid;
-            gap: 10px;
-            padding: 14px;
+            gap: 8px;
+            padding: 12px;
             border-radius: 16px;
             border: 1px solid rgba(24, 49, 63, 0.08);
             background: rgba(255, 255, 255, 0.88);
@@ -691,7 +706,7 @@
         .signal-card-head {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
         }
 
@@ -706,8 +721,8 @@
             flex: none;
             display: inline-flex;
             align-items: center;
-            min-height: 26px;
-            padding: 0 8px;
+            min-height: 24px;
+            padding: 0 7px;
             border-radius: 999px;
             font-size: 11px;
             font-weight: 700;
@@ -716,7 +731,7 @@
         .signal-card-copy {
             margin: 0;
             font-size: 13px;
-            line-height: 1.55;
+            line-height: 1.45;
             color: var(--ink);
         }
 
@@ -1266,6 +1281,12 @@
                 flex-direction: column;
             }
 
+            .signal-select-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                align-items: stretch;
+            }
+
             .signal-grid {
                 grid-template-columns: 1fr;
             }
@@ -1576,9 +1597,8 @@
         <section class="reference-sheet" role="dialog" aria-modal="true" aria-labelledby="signalGuideTitle">
             <div class="reference-sheet-header">
                 <div>
-                    <span class="eyebrow">乘前打点参考</span>
-                    <h2 id="signalGuideTitle">先查车型，再看四个位置谁更稳</h2>
-                    <p>不用在这里输车次。先去 12306 搜车次并查看车型，回来直接选，就能看到昵称和四个位置的开图表现。</p>
+                    <h2 id="signalGuideTitle">乘前打点参考</h2>
+                    <p>先去 12306 搜车次并查看车型，回来直接选，就能看到昵称和四个位置的开图表现。</p>
                 </div>
                 <button id="closeSignalGuideBtn" class="button button-ghost reference-close" type="button">关闭</button>
             </div>
@@ -1588,12 +1608,12 @@
                 <p>如果已经买了票，直接点击车次就能查看车型。</p>
             </div>
 
-            <label class="label">
-                选择车型
+            <div class="signal-select-row">
+                <label class="label" for="signalModelSelect">选择车型</label>
                 <select id="signalModelSelect" class="select-input">
                     <option value="">先去 12306 查看车型，再回来选择</option>
                 </select>
-            </label>
+            </div>
 
             <div id="signalEmptyState" class="signal-empty">
                 <strong>先选车型</strong>
