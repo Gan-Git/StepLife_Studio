@@ -1975,7 +1975,7 @@
                 };
                 lines.push(OUTPUT_HEADERS.map((key) => row[key]).join(","));
             });
-            return lines.join("\\n");
+            return lines.join("\r\n");
         }
 
         function prepareFullDataset() {
@@ -2661,7 +2661,8 @@
         }
 
         function downloadText(fileName, content) {
-            const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+            const normalizedContent = `\uFEFF${String(content || "")}`;
+            const blob = new Blob([normalizedContent], { type: "text/csv;charset=utf-8" });
             const url = URL.createObjectURL(blob);
             const anchor = document.createElement("a");
             anchor.href = url;
