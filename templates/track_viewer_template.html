@@ -48,6 +48,17 @@
             overflow: hidden;
         }
 
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        body.modal-open .leaflet-control-container,
+        body.modal-open .map-overlay {
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
         button,
         input,
         select {
@@ -185,6 +196,63 @@
             background: linear-gradient(135deg, rgba(13, 124, 143, 0.16), rgba(239, 125, 36, 0.16));
             color: var(--ink);
             box-shadow: inset 0 0 0 1px rgba(13, 124, 143, 0.18);
+        }
+
+        .reference-launcher {
+            gap: 10px;
+            margin-top: 14px;
+            padding: 14px 16px;
+            background:
+                radial-gradient(circle at top right, rgba(239, 125, 36, 0.16), transparent 32%),
+                linear-gradient(135deg, rgba(255, 253, 249, 0.96), rgba(244, 239, 232, 0.94));
+        }
+
+        .reference-launcher-head {
+            display: grid;
+            gap: 6px;
+        }
+
+        .reference-launcher .eyebrow {
+            padding: 0;
+            border-radius: 0;
+            background: none;
+            letter-spacing: 0.02em;
+            text-transform: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .reference-launcher-title {
+            margin: 0;
+            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-size: 18px;
+            line-height: 1.16;
+            letter-spacing: -0.03em;
+        }
+
+        .reference-launcher-head p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .reference-paths {
+            display: grid;
+            gap: 4px;
+        }
+
+        .reference-paths p {
+            margin: 0;
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--ink);
+        }
+
+        .reference-note {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.55;
         }
 
         .panel-stack {
@@ -452,6 +520,311 @@
             transform: translateY(-1px);
             border-color: rgba(13, 124, 143, 0.28);
             box-shadow: 0 10px 22px rgba(24, 49, 63, 0.12);
+        }
+
+        .reference-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 3200;
+            display: grid;
+            justify-items: center;
+            align-items: start;
+            padding: 12px 24px 24px;
+            overflow-y: auto;
+        }
+
+        .reference-modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(24, 49, 63, 0.36);
+            backdrop-filter: blur(12px);
+        }
+
+        .reference-sheet {
+            position: relative;
+            width: min(920px, calc(100vw - 24px));
+            max-height: min(88vh, 980px);
+            overflow: auto;
+            display: grid;
+            gap: 12px;
+            padding: 20px;
+            border-radius: 26px;
+            border: 1px solid rgba(255, 255, 255, 0.34);
+            background:
+                radial-gradient(circle at top right, rgba(239, 125, 36, 0.18), transparent 24%),
+                linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(247, 242, 235, 0.94));
+            box-shadow: 0 26px 60px rgba(24, 49, 63, 0.24);
+        }
+
+        .reference-sheet-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: start;
+        }
+
+        .reference-sheet-header h2 {
+            margin: 0;
+            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-size: clamp(24px, 3vw, 30px);
+            line-height: 1.06;
+            letter-spacing: -0.04em;
+        }
+
+        .reference-sheet-header p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .reference-sheet .reference-sheet-header + .reference-paths,
+        .reference-sheet .reference-paths + .reference-note,
+        .reference-sheet .reference-note + .label {
+            margin-top: -4px;
+        }
+
+        .reference-close {
+            flex: none;
+        }
+
+        .signal-empty,
+        .signal-result,
+        .signal-table-shell {
+            display: grid;
+            gap: 12px;
+            padding: 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(24, 49, 63, 0.08);
+            background: rgba(255, 255, 255, 0.74);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+        }
+
+        .signal-empty strong {
+            font-size: 14px;
+            color: var(--ink);
+        }
+
+        .signal-empty p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .signal-result-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: start;
+            flex-wrap: wrap;
+        }
+
+        .signal-result-kicker {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .signal-result-model {
+            margin-top: 6px;
+            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-size: 24px;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+            color: var(--ink);
+        }
+
+        .signal-result-series {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .signal-nickname-pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: rgba(13, 124, 143, 0.1);
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .signal-summary {
+            margin: 0;
+            color: var(--ink);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .signal-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .signal-card {
+            display: grid;
+            gap: 10px;
+            padding: 14px;
+            border-radius: 16px;
+            border: 1px solid rgba(24, 49, 63, 0.08);
+            background: rgba(255, 255, 255, 0.88);
+        }
+
+        .signal-card-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .signal-card-name {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .signal-tone-badge {
+            flex: none;
+            display: inline-flex;
+            align-items: center;
+            min-height: 26px;
+            padding: 0 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .signal-card-copy {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--ink);
+        }
+
+        .signal-tone-none {
+            background: rgba(191, 60, 29, 0.12);
+            border-color: rgba(191, 60, 29, 0.12);
+        }
+
+        .signal-tone-none .signal-tone-badge {
+            background: #d62f1f;
+            color: #fff8f4;
+        }
+
+        .signal-tone-awful {
+            background: rgba(191, 60, 29, 0.16);
+            border-color: rgba(191, 60, 29, 0.14);
+        }
+
+        .signal-tone-awful .signal-tone-badge {
+            background: #bf3c1d;
+            color: #fff8f4;
+        }
+
+        .signal-tone-poor {
+            background: rgba(239, 183, 77, 0.24);
+            border-color: rgba(239, 183, 77, 0.24);
+        }
+
+        .signal-tone-poor .signal-tone-badge {
+            background: #efb74d;
+            color: #5a3700;
+        }
+
+        .signal-tone-mixed {
+            background: rgba(142, 210, 83, 0.22);
+            border-color: rgba(142, 210, 83, 0.24);
+        }
+
+        .signal-tone-mixed .signal-tone-badge {
+            background: #9bd14f;
+            color: #173600;
+        }
+
+        .signal-tone-good {
+            background: rgba(17, 184, 94, 0.16);
+            border-color: rgba(17, 184, 94, 0.18);
+        }
+
+        .signal-tone-good .signal-tone-badge {
+            background: #12b85e;
+            color: #f5fff8;
+        }
+
+        .signal-tone-excellent {
+            background: rgba(21, 171, 224, 0.16);
+            border-color: rgba(21, 171, 224, 0.18);
+        }
+
+        .signal-tone-excellent .signal-tone-badge {
+            background: #15abe0;
+            color: #f4fcff;
+        }
+
+        .signal-table-details {
+            border-radius: 18px;
+            border: 1px solid rgba(24, 49, 63, 0.08);
+            background: rgba(255, 255, 255, 0.6);
+            overflow: hidden;
+        }
+
+        .signal-table-details summary {
+            cursor: pointer;
+            list-style: none;
+            padding: 15px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .signal-table-details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .signal-table-copy {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .signal-table-wrap {
+            overflow: auto;
+            border-radius: 14px;
+            border: 1px solid rgba(24, 49, 63, 0.08);
+            background: rgba(255, 255, 255, 0.88);
+        }
+
+        .signal-table {
+            width: max-content;
+            min-width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .signal-table th,
+        .signal-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(24, 49, 63, 0.08);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .signal-table th {
+            position: sticky;
+            top: 0;
+            background: rgba(247, 243, 236, 0.96);
+            color: var(--ink);
+            font-weight: 700;
         }
 
         .file-input-hidden {
@@ -830,6 +1203,15 @@
             .map-stage {
                 min-height: 55vh;
             }
+
+            .reference-modal {
+                padding: 14px;
+            }
+
+            .reference-sheet {
+                width: min(920px, calc(100vw - 12px));
+                max-height: min(90vh, 980px);
+            }
         }
 
         @media (max-width: 640px) {
@@ -853,6 +1235,23 @@
             .corner-links {
                 width: 100%;
                 justify-content: flex-start;
+            }
+
+            .reference-launcher {
+                margin-top: 12px;
+            }
+
+            .reference-sheet {
+                padding: 16px;
+                border-radius: 20px;
+            }
+
+            .reference-sheet-header {
+                flex-direction: column;
+            }
+
+            .signal-grid {
+                grid-template-columns: 1fr;
             }
 
             .two-col,
@@ -880,6 +1279,18 @@
                 <button type="button" class="tab-button active" data-tab-target="single">单段补轨</button>
                 <button type="button" class="tab-button" data-tab-target="full">全量足迹</button>
             </div>
+
+            <section class="section reference-launcher">
+                <div class="reference-launcher-head">
+                    <span class="eyebrow">乘前参考</span>
+                    <h2 class="reference-launcher-title">先查车型，再选位置</h2>
+                    <p>去 12306 看车型，回来选一下，就知道靠窗、车门和连接处哪边更稳。</p>
+                </div>
+                <div class="button-row">
+                    <button id="openSignalGuideBtn" class="button button-primary" type="button">选择车型</button>
+                </div>
+                <div class="reference-note">12306：搜索栏 -> 信息查询 -> 车次查询<br>已购票的话，直接点车次即可查看车型。</div>
+            </section>
 
             <div class="panel-stack">
                 <section id="singlePanel" class="panel active">
@@ -1143,6 +1554,73 @@
             </div>
         </main>
     </div>
+
+    <div id="signalGuideModal" class="reference-modal hidden" aria-hidden="true">
+        <div class="reference-modal-backdrop" data-signal-close="true"></div>
+        <section class="reference-sheet" role="dialog" aria-modal="true" aria-labelledby="signalGuideTitle">
+            <div class="reference-sheet-header">
+                <div>
+                    <span class="eyebrow">乘前打点参考</span>
+                    <h2 id="signalGuideTitle">先查车型，再看四个位置谁更稳</h2>
+                    <p>不用在这里输车次。先去 12306 搜车次并查看车型，回来直接选，就能看到昵称和四个位置的开图表现。</p>
+                </div>
+                <button id="closeSignalGuideBtn" class="button button-ghost reference-close" type="button">关闭</button>
+            </div>
+
+            <div class="reference-paths" aria-label="12306 查看车型路径">
+                <p>12306 路径：最上方搜索栏 -> 信息查询 -> 车次查询 -> 输入车次 -> 查看车型</p>
+                <p>如果已经买了票，直接点击车次就能查看车型。</p>
+            </div>
+            <div class="reference-note">这块只做足迹迷乘前参考，不替代官方信息。实际效果还会受线路、隧道、站停和天气影响。</div>
+
+            <label class="label">
+                选择车型
+                <select id="signalModelSelect" class="select-input">
+                    <option value="">先去 12306 查看车型，再回来选择</option>
+                </select>
+            </label>
+
+            <div id="signalEmptyState" class="signal-empty">
+                <strong>先选车型</strong>
+                <p>选完后会直接显示绰号和不靠窗、靠窗、贴车门、连接处这四个位置的信号表现。</p>
+            </div>
+
+            <div id="signalResult" class="signal-result hidden">
+                <div class="signal-result-header">
+                    <div>
+                        <div class="signal-result-kicker">车型结果</div>
+                        <div id="signalResultModel" class="signal-result-model">-</div>
+                        <div id="signalResultSeries" class="signal-result-series">-</div>
+                    </div>
+                    <div id="signalResultNickname" class="signal-nickname-pill">昵称：-</div>
+                </div>
+                <p id="signalResultSummary" class="signal-summary"></p>
+                <div id="signalResultGrid" class="signal-grid"></div>
+            </div>
+
+            <details id="signalTableDetails" class="signal-table-details">
+                <summary>查看全部车型对照表</summary>
+                <div class="signal-table-shell">
+                    <p class="signal-table-copy">完整表只作为重度足迹迷横向比对的补充资料</p>
+                    <div class="signal-table-wrap">
+                        <table class="signal-table">
+                            <thead>
+                                <tr>
+                                    <th>车型组</th>
+                                    <th>绰号</th>
+                                    <th>不靠窗</th>
+                                    <th>靠窗</th>
+                                    <th>贴车门</th>
+                                    <th>连接处</th>
+                                </tr>
+                            </thead>
+                            <tbody id="signalTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </details>
+        </section>
+    </div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
     <script>
@@ -1162,9 +1640,42 @@
 
         const BEIJING_OFFSET_SECONDS = 8 * 3600;
         const PHOTO_HEURISTIC_THRESHOLD = 0.2;
+        const SIGNAL_POSITION_LABELS = {
+            interior: "不靠窗",
+            window: "靠窗",
+            door: "贴车门",
+            connector: "连接处",
+        };
+        const TRAIN_SIGNAL_REFERENCE = [
+            { series: "CR400AF/CR400AF-A/CR400AF-B", nickname: "红神龙", positions: { interior: "无", window: "很差，经常丢失漂移", door: "差，易丢失漂移", connector: "非常好，除隧道和车站全程信号完美" } },
+            { series: "CR400BF/CR400BF-A/CR400BF-B", nickname: "金凤凰", positions: { interior: "无", window: "差，易丢失漂移", door: "差，易丢失漂移", connector: "非常好，除隧道和车站全程信号完美" } },
+            { series: "CR400AF-Z/CR400AF-AZ/CR400AF-BZ/CR400AF-C", nickname: "瑞龙智行或花栗鼠", positions: { interior: "无", window: "很差，经常丢失漂移", door: "差，易丢失漂移", connector: "非常好，除隧道和车站全程信号完美" } },
+            { series: "CR400BF-Z/CR400BF-AZ/CR400BF-BZ/CR400BF-GZ/CR400BF-C", nickname: "龙凤呈祥或大鼠标", positions: { interior: "无", window: "差，易丢失漂移", door: "差，易丢失漂移", connector: "非常好，除隧道和车站全程信号完美" } },
+            { series: "CR400AF-S/CR400AF-BS", nickname: "瑞龙智行或花栗鼠", positions: { interior: "无", window: "很差，经常丢失漂移", door: "差，易丢失漂移", connector: "非常好，除隧道和车站全程信号完美" } },
+            { series: "CR400BF-S/CR400BF-BS", nickname: "龙凤呈祥或大鼠标", positions: { interior: "无", window: "一般，间歇性丢失或漂移", door: "差，易丢失漂移", connector: "非常好，除隧道和车站全程信号完美" } },
+            { series: "CR300AF", nickname: "蓝妹妹", positions: { interior: "无", window: "很差，经常丢失漂移", door: "很差，经常丢失漂移", connector: "一般，间歇性丢失或漂移" } },
+            { series: "CR300BF", nickname: "蓝暖男", positions: { interior: "无", window: "很差，经常丢失漂移", door: "很差，经常丢失漂移", connector: "一般，间歇性丢失或漂移" } },
+            { series: "CRH380A/CRH380AL/CRH380AN", nickname: "老鼠/长编鼠/永磁鼠", positions: { interior: "无", window: "无", door: "一般，间歇性丢失或漂移", connector: "很差，经常丢失漂移" } },
+            { series: "CRH380B/CRH380BL/CRH380BG", nickname: "兔子/长编兔/高寒兔", positions: { interior: "无", window: "一般，间歇性丢失或漂移", door: "一般，间歇性丢失或漂移", connector: "非常好，除隧道和车站全程信号完美" } },
+            { series: "CRH380CL", nickname: "鲨鱼", positions: { interior: "无", window: "很差，经常丢失漂移", door: "一般，间歇性丢失或漂移", connector: "一般，间歇性丢失或漂移" } },
+            { series: "CRH380D", nickname: "疯地铁", positions: { interior: "无", window: "差，易丢失漂移", door: "一般，间歇性丢失或漂移", connector: "一般，间歇性丢失或漂移" } },
+            { series: "CRH1A/CRH1B", nickname: "大地铁", positions: { interior: "无", window: "很差，经常丢失漂移", door: "一般，间歇性丢失或漂移", connector: "好，偶尔漂移" } },
+            { series: "CRH1A-A", nickname: "萌地铁", positions: { interior: "无", window: "一般，间歇性丢失或漂移", door: "一般，间歇性丢失或漂移", connector: "好，偶尔漂移" } },
+            { series: "CRH1E", nickname: "睡地铁", positions: { interior: "无", window: "很差，经常丢失漂移", door: "一般，间歇性丢失或漂移", connector: "一般，间歇性丢失或漂移" } },
+            { series: "CRH2A/CRH2B", nickname: "带鱼", positions: { interior: "很差，经常丢失漂移", window: "好，偶尔漂移", door: "一般，间歇性丢失或漂移", connector: "很差，经常丢失漂移" } },
+            { series: "CRH2C-1/CRH2C-2", nickname: "疯带鱼", positions: { interior: "很差，经常丢失漂移", window: "好，偶尔漂移", door: "一般，间歇性丢失或漂移", connector: "很差，经常丢失漂移" } },
+            { series: "CRH2E", nickname: "睡带鱼", positions: { interior: "无", window: "一般，间歇性丢失或漂移", door: "一般，间歇性丢失或漂移", connector: "很差，经常丢失漂移" } },
+            { series: "CRH3A", nickname: "黄金眼", positions: { interior: "无", window: "差，易丢失漂移", door: "一般，间歇性丢失或漂移", connector: "一般，间歇性丢失或漂移" } },
+            { series: "CRH5A/CRH5G", nickname: "驴/高寒驴", positions: { interior: "无", window: "差，易丢失漂移", door: "一般，间歇性丢失或漂移", connector: "非常好，除隧道和车站全程信号完美" } },
+            { series: "CRH6A/CRH6F", nickname: "海豚", positions: { interior: "一般，间歇性丢失或漂移", window: "非常好，除隧道和车站全程信号完美", door: "非常好，除隧道和车站全程信号完美", connector: "一般，间歇性丢失或漂移" } },
+            { series: "CR200J", nickname: "绿巨人或垃圾桶或AD钙", positions: { interior: "无", window: "无", door: "无", connector: "非常好，除隧道和车站全程信号完美" } },
+        ];
 
         const state = {
             activeTab: "single",
+            signal: {
+                selectedModel: "",
+            },
             single: {
                 fileName: "",
                 points: [],
@@ -1208,6 +1719,7 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             collectElements();
+            initTrainSignalGuide();
             initMap();
             bindEvents();
             updateUploadName(ui.single.upload, ui.single.uploadName, "未选择文件");
@@ -1224,6 +1736,22 @@
             };
             ui.mapModeChip = document.getElementById("mapModeChip");
             ui.mapNote = document.getElementById("mapNote");
+            ui.signal = {
+                openBtn: document.getElementById("openSignalGuideBtn"),
+                modal: document.getElementById("signalGuideModal"),
+                closeBtn: document.getElementById("closeSignalGuideBtn"),
+                modelSelect: document.getElementById("signalModelSelect"),
+                emptyState: document.getElementById("signalEmptyState"),
+                result: document.getElementById("signalResult"),
+                resultModel: document.getElementById("signalResultModel"),
+                resultSeries: document.getElementById("signalResultSeries"),
+                resultNickname: document.getElementById("signalResultNickname"),
+                resultSummary: document.getElementById("signalResultSummary"),
+                resultGrid: document.getElementById("signalResultGrid"),
+                tableDetails: document.getElementById("signalTableDetails"),
+                tableBody: document.getElementById("signalTableBody"),
+                closeNodes: Array.from(document.querySelectorAll("[data-signal-close]")),
+            };
 
             ui.single = {
                 format: document.getElementById("singleFormat"),
@@ -1279,6 +1807,12 @@
             };
         }
 
+        function initTrainSignalGuide() {
+            populateSignalModelOptions();
+            renderSignalFullTable();
+            renderSignalGuideResult(null);
+        }
+
         function initMap() {
             const map = L.map("map", {
                 zoomControl: true,
@@ -1297,6 +1831,12 @@
             ui.tabButtons.forEach((button) => {
                 button.addEventListener("click", () => setActiveTab(button.dataset.tabTarget));
             });
+
+            ui.signal.openBtn.addEventListener("click", () => openSignalGuide());
+            ui.signal.closeBtn.addEventListener("click", closeSignalGuide);
+            ui.signal.closeNodes.forEach((node) => node.addEventListener("click", closeSignalGuide));
+            ui.signal.modelSelect.addEventListener("change", handleSignalModelChange);
+            document.addEventListener("keydown", handleGlobalShortcuts);
 
             ui.single.format.addEventListener("change", () => {
                 toggleTimeInputs();
@@ -1350,6 +1890,150 @@
                 state.full.showPhotos = ui.full.photoToggle.checked;
                 refreshFullMode();
             });
+        }
+
+        function populateSignalModelOptions() {
+            const options = [
+                '<option value="">先去 12306 查看车型，再回来选择</option>',
+            ];
+            TRAIN_SIGNAL_REFERENCE.forEach((entry) => {
+                options.push(`<option value="${escapeHtml(entry.series)}">${escapeHtml(entry.series)}</option>`);
+            });
+            ui.signal.modelSelect.innerHTML = options.join("");
+        }
+
+        function renderSignalFullTable() {
+            ui.signal.tableBody.innerHTML = TRAIN_SIGNAL_REFERENCE.map((entry) => `
+                <tr>
+                    <td>${escapeHtml(entry.series)}</td>
+                    <td>${escapeHtml(entry.nickname)}</td>
+                    <td>${escapeHtml(entry.positions.interior)}</td>
+                    <td>${escapeHtml(entry.positions.window)}</td>
+                    <td>${escapeHtml(entry.positions.door)}</td>
+                    <td>${escapeHtml(entry.positions.connector)}</td>
+                </tr>
+            `).join("");
+        }
+
+        function openSignalGuide({ expandTable = false } = {}) {
+            ui.signal.modal.classList.remove("hidden");
+            ui.signal.modal.setAttribute("aria-hidden", "false");
+            ui.signal.tableDetails.open = expandTable;
+            document.body.classList.add("modal-open");
+            window.requestAnimationFrame(() => {
+                ui.signal.modelSelect.focus();
+            });
+        }
+
+        function closeSignalGuide() {
+            ui.signal.modal.classList.add("hidden");
+            ui.signal.modal.setAttribute("aria-hidden", "true");
+            document.body.classList.remove("modal-open");
+        }
+
+        function handleGlobalShortcuts(event) {
+            if (event.key === "Escape" && !ui.signal.modal.classList.contains("hidden")) {
+                closeSignalGuide();
+            }
+        }
+
+        function handleSignalModelChange() {
+            const selectedModel = ui.signal.modelSelect.value;
+            state.signal.selectedModel = selectedModel;
+            const selected = TRAIN_SIGNAL_REFERENCE.find((entry) => entry.series === selectedModel) || null;
+            renderSignalGuideResult(selected);
+        }
+
+        function renderSignalGuideResult(selected) {
+            if (!selected) {
+                ui.signal.emptyState.classList.remove("hidden");
+                ui.signal.result.classList.add("hidden");
+                ui.signal.resultGrid.innerHTML = "";
+                return;
+            }
+
+            ui.signal.emptyState.classList.add("hidden");
+            ui.signal.result.classList.remove("hidden");
+            ui.signal.resultModel.textContent = selected.series;
+            ui.signal.resultSeries.textContent = "12306 里看到这一组里的任一车型，都按这组参考。";
+            ui.signal.resultNickname.textContent = `昵称：${selected.nickname}`;
+            ui.signal.resultSummary.textContent = buildSignalSummary(selected.positions);
+            ui.signal.resultGrid.innerHTML = Object.entries(selected.positions).map(([key, value]) => `
+                <article class="signal-card signal-tone-${classifySignalLevel(value)}">
+                    <div class="signal-card-head">
+                        <h3 class="signal-card-name">${escapeHtml(SIGNAL_POSITION_LABELS[key])}</h3>
+                        <span class="signal-tone-badge">${escapeHtml(getSignalToneLabel(value))}</span>
+                    </div>
+                    <p class="signal-card-copy">${escapeHtml(value)}</p>
+                </article>
+            `).join("");
+        }
+
+        function buildSignalSummary(positions) {
+            const scored = Object.entries(positions).map(([key, value]) => ({
+                key,
+                score: signalScore(value),
+            }));
+            const bestScore = Math.max(...scored.map((item) => item.score));
+            if (bestScore <= 1) {
+                return "这款车整体比较吃位置和线路环境，乘前别太乐观，尽量结合当天区间和隧道情况一起判断。";
+            }
+            const bestLabels = scored
+                .filter((item) => item.score === bestScore)
+                .map((item) => SIGNAL_POSITION_LABELS[item.key]);
+            return `优先参考：${bestLabels.join(" / ")}。这只是足迹迷实测参考，实际效果还会受线路、隧道、站停和天气影响。`;
+        }
+
+        function signalScore(text) {
+            const tone = classifySignalLevel(text);
+            return {
+                none: 0,
+                awful: 1,
+                poor: 2,
+                mixed: 3,
+                good: 4,
+                excellent: 5,
+            }[tone];
+        }
+
+        function classifySignalLevel(text) {
+            const normalized = String(text || "").trim();
+            if (normalized.startsWith("非常好")) {
+                return "excellent";
+            }
+            if (normalized.startsWith("好")) {
+                return "good";
+            }
+            if (normalized.startsWith("一般")) {
+                return "mixed";
+            }
+            if (normalized.startsWith("很差")) {
+                return "awful";
+            }
+            if (normalized.startsWith("差")) {
+                return "poor";
+            }
+            return "none";
+        }
+
+        function getSignalToneLabel(text) {
+            const normalized = String(text || "").trim();
+            if (normalized.startsWith("非常好")) {
+                return "非常好";
+            }
+            if (normalized.startsWith("好")) {
+                return "好";
+            }
+            if (normalized.startsWith("一般")) {
+                return "一般";
+            }
+            if (normalized.startsWith("很差")) {
+                return "很差";
+            }
+            if (normalized.startsWith("差")) {
+                return "差";
+            }
+            return "无";
         }
 
         function setActiveTab(tab) {
