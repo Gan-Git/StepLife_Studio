@@ -531,7 +531,7 @@
             display: grid;
             justify-items: center;
             align-items: start;
-            padding: 28px 32px 36px;
+            padding: 22px 28px 30px;
             overflow-y: auto;
             overscroll-behavior: contain;
         }
@@ -545,19 +545,25 @@
 
         .reference-sheet {
             position: relative;
-            width: min(860px, calc(100% - 32px));
+            width: min(700px, calc(100% - 56px));
             max-width: 100%;
-            max-height: calc(100dvh - 56px);
-            overflow: visible;
+            max-height: calc(100dvh - 52px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior: contain;
             display: grid;
             gap: 12px;
-            padding: 22px;
+            padding: 20px;
             border-radius: 26px;
             border: 1px solid rgba(255, 255, 255, 0.34);
             background:
                 radial-gradient(circle at top right, rgba(239, 125, 36, 0.18), transparent 24%),
                 linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(247, 242, 235, 0.94));
             box-shadow: 0 26px 60px rgba(24, 49, 63, 0.24);
+        }
+
+        .reference-sheet.table-focus {
+            width: min(1120px, calc(100% - 40px));
         }
 
         .reference-sheet-header {
@@ -803,6 +809,7 @@
 
         .signal-table-wrap {
             overflow: auto;
+            max-height: min(58dvh, 560px);
             border-radius: 14px;
             border: 1px solid rgba(24, 49, 63, 0.08);
             background: rgba(255, 255, 255, 0.88);
@@ -1210,12 +1217,16 @@
             }
 
             .reference-modal {
-                padding: 18px 16px 24px;
+                padding: 14px 12px 18px;
             }
 
             .reference-sheet {
-                width: min(860px, calc(100% - 8px));
-                max-height: calc(100dvh - 36px);
+                width: min(700px, calc(100% - 4px));
+                max-height: calc(100dvh - 24px);
+            }
+
+            .reference-sheet.table-focus {
+                width: min(1120px, calc(100% - 4px));
             }
         }
 
@@ -1743,6 +1754,7 @@
             ui.signal = {
                 openBtn: document.getElementById("openSignalGuideBtn"),
                 modal: document.getElementById("signalGuideModal"),
+                sheet: document.querySelector("#signalGuideModal .reference-sheet"),
                 closeBtn: document.getElementById("closeSignalGuideBtn"),
                 modelSelect: document.getElementById("signalModelSelect"),
                 emptyState: document.getElementById("signalEmptyState"),
@@ -1840,6 +1852,7 @@
             ui.signal.closeBtn.addEventListener("click", closeSignalGuide);
             ui.signal.closeNodes.forEach((node) => node.addEventListener("click", closeSignalGuide));
             ui.signal.modelSelect.addEventListener("change", handleSignalModelChange);
+            ui.signal.tableDetails.addEventListener("toggle", syncSignalGuideLayout);
             document.addEventListener("keydown", handleGlobalShortcuts);
 
             ui.single.format.addEventListener("change", () => {
@@ -1923,6 +1936,7 @@
             ui.signal.modal.classList.remove("hidden");
             ui.signal.modal.setAttribute("aria-hidden", "false");
             ui.signal.tableDetails.open = expandTable;
+            syncSignalGuideLayout();
             document.body.classList.add("modal-open");
             window.requestAnimationFrame(() => {
                 ui.signal.modelSelect.focus();
@@ -1933,6 +1947,10 @@
             ui.signal.modal.classList.add("hidden");
             ui.signal.modal.setAttribute("aria-hidden", "true");
             document.body.classList.remove("modal-open");
+        }
+
+        function syncSignalGuideLayout() {
+            ui.signal.sheet.classList.toggle("table-focus", ui.signal.tableDetails.open);
         }
 
         function handleGlobalShortcuts(event) {
