@@ -531,7 +531,7 @@
             display: grid;
             justify-items: center;
             align-items: start;
-            padding: 12px 24px 24px;
+            padding: 28px 32px 36px;
             overflow-y: auto;
             overscroll-behavior: contain;
         }
@@ -545,12 +545,13 @@
 
         .reference-sheet {
             position: relative;
-            width: min(920px, 100%);
+            width: min(860px, calc(100% - 32px));
             max-width: 100%;
+            max-height: calc(100dvh - 56px);
             overflow: visible;
             display: grid;
             gap: 12px;
-            padding: 20px;
+            padding: 22px;
             border-radius: 26px;
             border: 1px solid rgba(255, 255, 255, 0.34);
             background:
@@ -1209,11 +1210,12 @@
             }
 
             .reference-modal {
-                padding: 14px;
+                padding: 18px 16px 24px;
             }
 
             .reference-sheet {
-                width: min(920px, 100%);
+                width: min(860px, calc(100% - 8px));
+                max-height: calc(100dvh - 36px);
             }
         }
 
@@ -1283,20 +1285,20 @@
                 <button type="button" class="tab-button" data-tab-target="full">全量足迹</button>
             </div>
 
-            <section class="section reference-launcher">
-                <div class="reference-launcher-head">
-                    <span class="eyebrow">乘前参考</span>
-                    <h2 class="reference-launcher-title">先查车型，再选位置</h2>
-                    <p>去 12306 看车型，回来选一下，就知道靠窗、车门和连接处哪边更稳。</p>
-                </div>
-                <div class="button-row">
-                    <button id="openSignalGuideBtn" class="button button-primary" type="button">选择车型</button>
-                </div>
-                <div class="reference-note">12306：搜索栏 -> 信息查询 -> 车次查询<br>已购票的话，直接点车次即可查看车型。</div>
-            </section>
-
             <div class="panel-stack">
                 <section id="singlePanel" class="panel active">
+                    <section class="section reference-launcher">
+                        <div class="reference-launcher-head">
+                            <span class="eyebrow">乘前参考</span>
+                            <h2 class="reference-launcher-title">先查车型，再选位置</h2>
+                            <p>去 12306 看车型，回来选一下，就知道靠窗、车门和连接处哪边更稳。</p>
+                        </div>
+                        <div class="button-row">
+                            <button id="openSignalGuideBtn" class="button button-primary" type="button">选择车型</button>
+                        </div>
+                        <div class="reference-note">12306：搜索栏 -> 信息查询 -> 车次查询<br>已购票的话，直接点车次即可查看车型。</div>
+                    </section>
+
                     <div class="section">
                         <div class="section-header">
                             <div>
