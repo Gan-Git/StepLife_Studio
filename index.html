@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>一生足迹工作台</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
         :root {
@@ -25,6 +22,8 @@
             --radius-lg: 18px;
             --radius-md: 12px;
             --radius-sm: 10px;
+            --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+            --font-display: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
         }
 
         * {
@@ -41,7 +40,7 @@
                 radial-gradient(circle at bottom right, rgba(13, 124, 143, 0.2), transparent 28%),
                 linear-gradient(180deg, #efe9df 0%, #e8e3d8 100%);
             color: var(--ink);
-            font-family: "Noto Sans SC", sans-serif;
+            font-family: var(--font-sans);
         }
 
         body {
@@ -68,7 +67,10 @@
         .app-shell {
             display: flex;
             height: 100vh;
-            width: 100vw;
+            height: 100dvh;
+            min-height: 100vh;
+            min-height: 100dvh;
+            width: 100%;
             padding: 18px;
             gap: 18px;
         }
@@ -116,7 +118,7 @@
 
         .brand h1 {
             margin: 0;
-            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-family: var(--font-display);
             font-size: clamp(28px, 3vw, 38px);
             line-height: 1.05;
             letter-spacing: -0.04em;
@@ -224,7 +226,7 @@
 
         .reference-launcher-title {
             margin: 0;
-            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-family: var(--font-display);
             font-size: 18px;
             line-height: 1.16;
             letter-spacing: -0.03em;
@@ -298,7 +300,7 @@
 
         .section h2 {
             margin: 0;
-            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-family: var(--font-display);
             font-size: 18px;
             letter-spacing: -0.03em;
         }
@@ -531,6 +533,7 @@
             align-items: start;
             padding: 12px 24px 24px;
             overflow-y: auto;
+            overscroll-behavior: contain;
         }
 
         .reference-modal-backdrop {
@@ -542,9 +545,9 @@
 
         .reference-sheet {
             position: relative;
-            width: min(920px, calc(100vw - 24px));
-            max-height: min(88vh, 980px);
-            overflow: auto;
+            width: min(920px, 100%);
+            max-width: 100%;
+            overflow: visible;
             display: grid;
             gap: 12px;
             padding: 20px;
@@ -565,7 +568,7 @@
 
         .reference-sheet-header h2 {
             margin: 0;
-            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-family: var(--font-display);
             font-size: clamp(24px, 3vw, 30px);
             line-height: 1.06;
             letter-spacing: -0.04em;
@@ -630,7 +633,7 @@
 
         .signal-result-model {
             margin-top: 6px;
-            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-family: var(--font-display);
             font-size: 24px;
             line-height: 1.08;
             letter-spacing: -0.04em;
@@ -850,7 +853,7 @@
         }
 
         .mode-explain-title {
-            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-family: var(--font-display);
             font-size: 15px;
             letter-spacing: -0.02em;
         }
@@ -1035,7 +1038,7 @@
             margin-top: 6px;
             font-size: 24px;
             line-height: 1.15;
-            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-family: var(--font-display);
             letter-spacing: -0.04em;
         }
 
@@ -1167,7 +1170,7 @@
 
         .memory-value {
             margin-top: 10px;
-            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            font-family: var(--font-display);
             font-size: 26px;
             line-height: 1.1;
             letter-spacing: -0.04em;
@@ -1192,6 +1195,7 @@
             .app-shell {
                 height: auto;
                 min-height: 100vh;
+                min-height: 100dvh;
                 flex-direction: column;
             }
 
@@ -1209,8 +1213,7 @@
             }
 
             .reference-sheet {
-                width: min(920px, calc(100vw - 12px));
-                max-height: min(90vh, 980px);
+                width: min(920px, 100%);
             }
         }
 
@@ -1571,7 +1574,6 @@
                 <p>12306 路径：最上方搜索栏 -> 信息查询 -> 车次查询 -> 输入车次 -> 查看车型</p>
                 <p>如果已经买了票，直接点击车次就能查看车型。</p>
             </div>
-            <div class="reference-note">这块只做足迹迷乘前参考，不替代官方信息。实际效果还会受线路、隧道、站停和天气影响。</div>
 
             <label class="label">
                 选择车型
