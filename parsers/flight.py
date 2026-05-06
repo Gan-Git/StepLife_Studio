@@ -12,8 +12,9 @@ def convert_flight_csv(input_path: str) -> list[dict]:
     with open(input_path, "r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         for item in reader:
-            utc_timestamp = int(float(item["Time"]))
-            beijing_timestamp = utc_timestamp + 8 * 3600
+            # Variflight `Time` is already a Unix timestamp for the UTC instant.
+            # Keep it as-is and let downstream formatting render Beijing time.
+            timestamp = int(float(item["Time"]))
             longitude = float(item["Longitude"])
             latitude = float(item["Latitude"])
 
@@ -22,7 +23,7 @@ def convert_flight_csv(input_path: str) -> list[dict]:
 
             rows.append(
                 {
-                    "dataTime": beijing_timestamp,
+                    "dataTime": timestamp,
                     "locType": 1,
                     "longitude": format_number(longitude),
                     "latitude": format_number(latitude),

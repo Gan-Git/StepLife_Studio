@@ -2292,7 +2292,8 @@
         function parseFlightCsv(text) {
             const rows = parseCsvText(text);
             return rows.map((row) => ({
-                dataTime: safeNumber(row.Time, 0) + BEIJING_OFFSET_SECONDS,
+                // Variflight `Time` is already an absolute Unix timestamp.
+                dataTime: safeNumber(row.Time, 0),
                 locType: 1,
                 longitude: safeNumber(row.Longitude, NaN),
                 latitude: safeNumber(row.Latitude, NaN),
